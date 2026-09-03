@@ -1,0 +1,15 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.pgdata/
+.storage/
+node_modules/
+.next/
+*.egg-info/
+dist/
+.env
