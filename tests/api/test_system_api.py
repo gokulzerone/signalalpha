@@ -19,3 +19,8 @@ def test_data_quality_and_performance(client: TestClient, mock_backtest: int) ->
     assert before["backtest_run_id"] is None and before["rows"] == []
     sp = client.get("/api/v1/scores/performance", params={"as_of": "2026-08-31"}).json()["data"]
     assert sp["backtest_run_id"] == mock_backtest
+
+
+def test_platform_liveness_needs_no_key(secured_client: TestClient) -> None:
+    assert secured_client.get("/health").json() == {"status": "ok"}
+    assert secured_client.get("/api/v1/health").status_code == 401

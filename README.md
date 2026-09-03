@@ -10,6 +10,7 @@ docker compose -f infra/docker-compose.yml up   # Postgres, Redis, MinIO, bootst
 ```
 
 Then open http://localhost:3000. Without Docker: `make bootstrap`, then `make api` and `make web`.
+To deploy, connect the repo as a Render Blueprint (`render.yaml`); see `docs/deploy.md`.
 
 ## Development
 

@@ -2,7 +2,8 @@
 // through the /api proxy route, which adds it.
 import "server-only";
 
-const BASE = process.env.SIGNALALPHA_API_BASE ?? "http://localhost:8000";
+const RAW_BASE = process.env.SIGNALALPHA_API_BASE ?? "http://localhost:8000";
+const BASE = /^https?:\/\//.test(RAW_BASE) ? RAW_BASE : `http://${RAW_BASE}`;
 const KEY = process.env.SIGNALALPHA_API_KEY ?? "";
 export const DATASET = process.env.SIGNALALPHA_DATASET ?? "mock";
 

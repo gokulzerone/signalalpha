@@ -13,3 +13,7 @@ node_modules/
 *.egg-info/
 dist/
 .env
+
+# an empty local clone of the GitHub repo that lives inside the project folder
+signalalpha/
+apps/web/tsconfig.tsbuildinfo

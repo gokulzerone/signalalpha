@@ -64,3 +64,12 @@ def test_raw_document_sha256_is_identity(session: Session) -> None:
     )
     with pytest.raises(IntegrityError):
         session.flush()
+
+
+def test_managed_postgres_urls_are_normalised() -> None:
+    from database.engine import normalise_url
+
+    assert normalise_url("postgres://u:p@h:5432/db") == "postgresql+psycopg://u:p@h:5432/db"
+    assert normalise_url("postgresql://u:p@h/db") == "postgresql+psycopg://u:p@h/db"
+    assert normalise_url("postgresql+psycopg://u:p@h/db") == "postgresql+psycopg://u:p@h/db"
+    assert normalise_url("embedded") == "embedded"

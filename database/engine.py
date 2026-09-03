@@ -20,11 +20,20 @@ def _embedded(data_dir: Path) -> str:
     return EmbeddedPostgres(data_dir).url
 
 
+def normalise_url(url: str) -> str:
+    """Managed providers hand out ``postgres://`` or ``postgresql://``; SQLAlchemy needs the
+    psycopg driver spelled out."""
+    for prefix in ("postgres://", "postgresql://"):
+        if url.startswith(prefix):
+            return "postgresql+psycopg://" + url[len(prefix) :]
+    return url
+
+
 def resolve_database_url() -> str:
     settings = get_settings()
     if settings.database_url == "embedded":
         return _embedded(settings.embedded_pg_dir)
-    return settings.database_url
+    return normalise_url(settings.database_url)
 
 
 @lru_cache(maxsize=1)

@@ -44,6 +44,11 @@ def create_app(
     def health() -> dict[str, str]:
         return {"status": "ok", "disclaimer": DISCLAIMER}
 
+    @app.get("/health", include_in_schema=False)
+    def liveness() -> dict[str, str]:
+        """Platform health check; carries no data and needs no key."""
+        return {"status": "ok"}
+
     app.mount("/api/v1", api)
     return app
 

@@ -1,0 +1,73 @@
+# Render Blueprint (https://render.com/docs/blueprint-spec): the whole SignalAlpha stack.
+# Connect the GitHub repo as a Blueprint in the Render project; every service below is
+# created and wired automatically. The API's pre-deploy step migrates the database and
+# bootstraps the mock universe (idempotent), so the dashboard has data on first boot.
+databases:
+  - name: signalalpha-db
+    plan: basic-256mb
+    postgresMajorVersion: "16"
+
+services:
+  - type: keyvalue
+    name: signalalpha-redis
+    plan: free
+    ipAllowList: []            # internal only
+
+  - type: web
+    name: signalalpha-api
+    runtime: docker
+    plan: starter
+    dockerfilePath: ./infra/Dockerfile.api
+    dockerContext: .
+    healthCheckPath: /health
+    preDeployCommand: python scripts/bootstrap_mock.py
+    envVars:
+      - key: SIGNALALPHA_DATABASE_URL
+        fromDatabase: { name: signalalpha-db, property: connectionString }
+      - key: SIGNALALPHA_BROKER_URL
+        fromService: { type: keyvalue, name: signalalpha-redis, property: connectionString }
+      - key: SIGNALALPHA_API_KEY
+        generateValue: true
+      - key: SIGNALALPHA_OBJECT_STORE_DIR
+        value: /tmp/objects
+      - key: SIGNALALPHA_LLM_PROVIDER
+        value: template        # set to "anthropic" and add ANTHROPIC_API_KEY to use Claude
+      - key: SIGNALALPHA_DEFAULT_DATASET
+        value: mock
+
+  - type: worker
+    name: signalalpha-worker
+    runtime: docker
+    plan: starter
+    dockerfilePath: ./infra/Dockerfile.api
+    dockerContext: .
+    dockerCommand: celery -A pipelines.celery_app:celery_app worker -B -Q ingest,parse,signals,agents,scores,backtest -l info
+    envVars:
+      - key: SIGNALALPHA_DATABASE_URL
+        fromDatabase: { name: signalalpha-db, property: connectionString }
+      - key: SIGNALALPHA_BROKER_URL
+        fromService: { type: keyvalue, name: signalalpha-redis, property: connectionString }
+      - key: SIGNALALPHA_OBJECT_STORE_DIR
+        value: /tmp/objects
+      - key: SIGNALALPHA_LLM_PROVIDER
+        value: template
+      # Live sources stay off until you flip these (PRD §15 step 10).
+      - key: SIGNALALPHA_LIVE_EOD_PRICES
+        value: "false"
+      - key: SIGNALALPHA_LIVE_NSE_ANNOUNCEMENTS
+        value: "false"
+
+  - type: web
+    name: signalalpha-web
+    runtime: docker
+    plan: starter
+    dockerfilePath: ./infra/Dockerfile.web
+    dockerContext: .
+    healthCheckPath: /
+    envVars:
+      - key: SIGNALALPHA_API_BASE
+        fromService: { type: web, name: signalalpha-api, property: hostport }
+      - key: SIGNALALPHA_API_KEY
+        fromService: { type: web, name: signalalpha-api, envVarKey: SIGNALALPHA_API_KEY }
+      - key: SIGNALALPHA_DATASET
+        value: mock
