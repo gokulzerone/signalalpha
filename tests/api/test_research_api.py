@@ -62,6 +62,11 @@ def test_research_job_runs_signals_and_scores(
         "data"
     ]
     assert v["source"] == "agent" and v["agent_run_id"]
+    research = client.get(f"/api/v1/companies/{cid}/research", params={"as_of": "2026-08-31"})
+    research = research.json()["data"]
+    assert research["business"]
+    assert research["business"]["output"]["order_book_estimate_cr"] is not None
+    assert research["thesis"] and research["contradiction"]
     listing = client.get("/api/v1/companies", params={"as_of": "2026-08-31", "page_size": 200})
     row = next(i for i in listing.json()["data"]["items"] if i["id"] == cid)
     assert row["key_change"]

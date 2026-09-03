@@ -1,0 +1,19 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "api",
+      "runtimeExecutable": ".venv/bin/uvicorn",
+      "runtimeArgs": ["apps.api.main:app", "--factory", "--port", "8000"],
+      "env": { "SIGNALALPHA_DATABASE_URL": "embedded" },
+      "port": 8000
+    },
+    {
+      "name": "web",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "apps/web", "run", "start"],
+      "env": { "SIGNALALPHA_API_BASE": "http://localhost:8000", "SIGNALALPHA_DATASET": "mock" },
+      "port": 3000
+    }
+  ]
+}

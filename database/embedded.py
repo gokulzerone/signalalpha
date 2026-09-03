@@ -11,6 +11,7 @@ class EmbeddedPostgres:
     """Owns a pgserver instance and exposes a SQLAlchemy URL with the psycopg driver."""
 
     def __init__(self, data_dir: Path) -> None:
+        data_dir.parent.mkdir(parents=True, exist_ok=True)
         self._server = get_server(str(data_dir))
 
     @property

@@ -8,7 +8,7 @@ from fastapi import Depends, FastAPI
 from sqlalchemy import Engine
 
 from apps.api.deps import require_api_key
-from apps.api.routers import companies, discovery, research, system
+from apps.api.routers import agents, companies, discovery, research, system
 from apps.api.settings import ApiSettings, get_api_settings
 from database.engine import get_engine, get_sessionmaker
 from pipelines.dispatch import Dispatcher, build_dispatcher
@@ -35,6 +35,7 @@ def create_app(
     )
     api.state = app.state
     api.include_router(companies.router)
+    api.include_router(agents.router)
     api.include_router(discovery.router)
     api.include_router(research.router)
     api.include_router(system.router)

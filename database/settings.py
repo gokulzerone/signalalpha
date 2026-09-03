@@ -16,7 +16,8 @@ class DatabaseSettings(BaseSettings):
     model_config = SettingsConfigDict(env_prefix="SIGNALALPHA_", extra="ignore")
 
     database_url: str = "embedded"
-    embedded_pg_dir: Path = Path(".pgdata")
+    embedded_pg_dir: Path = Path.home() / ".signalalpha" / "pgdata"
+    """Kept outside the repository: the Unix socket path must be short and space-free."""
     echo_sql: bool = False
 
 

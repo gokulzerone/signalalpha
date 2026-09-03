@@ -1,0 +1,34 @@
+{
+  "model_id": "template-v1",
+  "output": {
+    "rationale": "Scenarios bracket the trailing revenue growth, EBITDA margin and current EV/EBITDA multiple.",
+    "scenarios": [
+      {
+        "ebitda_margin": 0.1399,
+        "exit_ev_ebitda": 18.58,
+        "horizon_years": 2,
+        "name": "bear",
+        "rationale": "Bear case around trailing growth and margin; order book of Rs. 0.00 crore informs the growth assumption.",
+        "revenue_growth": -0.0384
+      },
+      {
+        "ebitda_margin": 0.1699,
+        "exit_ev_ebitda": 24.77,
+        "horizon_years": 2,
+        "name": "base",
+        "rationale": "Base case around trailing growth and margin; order book of Rs. 0.00 crore informs the growth assumption.",
+        "revenue_growth": 0.0616
+      },
+      {
+        "ebitda_margin": 0.1999,
+        "exit_ev_ebitda": 30.96,
+        "horizon_years": 2,
+        "name": "bull",
+        "rationale": "Bull case around trailing growth and margin; order book of Rs. 0.00 crore informs the growth assumption.",
+        "revenue_growth": 0.1616
+      }
+    ]
+  },
+  "tokens_in": 335,
+  "tokens_out": 207
+}

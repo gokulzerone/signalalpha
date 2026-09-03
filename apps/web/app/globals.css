@@ -1,0 +1,14 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root { color-scheme: dark; }
+body { @apply bg-ink-900 text-slate-200 font-mono text-[13px]; }
+a { @apply text-sky-300 hover:underline; }
+table { @apply w-full border-collapse; }
+th { @apply text-left text-muted font-normal uppercase tracking-wide text-[11px] px-2 py-1 border-b border-ink-500 whitespace-nowrap; }
+td { @apply px-2 py-1 border-b border-ink-700 align-top; }
+tr[data-selected="true"] { @apply bg-ink-600; }
+.card { @apply border border-ink-600 bg-ink-800 rounded p-3; }
+.kbd { @apply border border-ink-500 rounded px-1 text-[10px] text-muted; }
+mark { @apply bg-warn/40 text-slate-100 rounded-sm; }
