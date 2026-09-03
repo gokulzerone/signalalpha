@@ -1,0 +1,44 @@
+# Fictional mock universe (PRD §5.3). Every ticker is prefixed MOCK-; every name says (Mock).
+# story: control | order_book_surge | pledge_unwind | margin_turnaround | forensic_red_flag
+#        | deceptive_growth | delisted | illiquid
+companies:
+  - {ticker: MOCK-ARGR, name: "Aravalli Gears (Mock) Ltd", sector: Capital Goods, industry: Industrial machinery, story: order_book_surge}
+  - {ticker: MOCK-KVSW, name: "Kaveri Switchgear (Mock) Ltd", sector: Capital Goods, industry: Electrical equipment, story: control}
+  - {ticker: MOCK-TGBR, name: "Tungabhadra Bearings (Mock) Ltd", sector: Capital Goods, industry: Bearings, story: control, bonus_issue: true}
+  - {ticker: MOCK-SHCP, name: "Sahyadri Compressors (Mock) Ltd", sector: Capital Goods, industry: Industrial machinery, story: control}
+  - {ticker: MOCK-NRSC, name: "Narmada Specialty Chem (Mock) Ltd", sector: Chemicals, industry: Specialty chemicals, story: margin_turnaround}
+  - {ticker: MOCK-GDAG, name: "Godavari Agrochem (Mock) Ltd", sector: Chemicals, industry: Agrochemicals, story: control}
+  - {ticker: MOCK-PRPG, name: "Periyar Pigments (Mock) Ltd", sector: Chemicals, industry: Specialty chemicals, story: control}
+  - {ticker: MOCK-CHFL, name: "Chambal Fluorochem (Mock) Ltd", sector: Chemicals, industry: Specialty chemicals, story: control}
+  - {ticker: MOCK-VNLS, name: "Vindhya Lifesciences (Mock) Ltd", sector: Pharma, industry: API manufacturing, story: control}
+  - {ticker: MOCK-MHFM, name: "Mahanadi Formulations (Mock) Ltd", sector: Pharma, industry: Formulations, story: control}
+  - {ticker: MOCK-BRAP, name: "Brahmaputra APIs (Mock) Ltd", sector: Pharma, industry: API manufacturing, story: control}
+  - {ticker: MOCK-TPBL, name: "Tapti Biologics (Mock) Ltd", sector: Pharma, industry: Formulations, story: control}
+  - {ticker: MOCK-ZNIT, name: "Zanskar Infotech (Mock) Ltd", sector: IT Services, industry: Engineering services, story: deceptive_growth}
+  - {ticker: MOCK-STDG, name: "Sutlej Digital (Mock) Ltd", sector: IT Services, industry: BPO, story: control}
+  - {ticker: MOCK-BSES, name: "Beas Engineering Services (Mock) Ltd", sector: IT Services, industry: Engineering services, story: control}
+  - {ticker: MOCK-RVPS, name: "Ravi Process Solutions (Mock) Ltd", sector: IT Services, industry: BPO, story: control}
+  - {ticker: MOCK-KRCS, name: "Krishna Castings (Mock) Ltd", sector: Auto Ancillaries, industry: Castings, story: margin_turnaround}
+  - {ticker: MOCK-PNHR, name: "Pennar Harness (Mock) Ltd", sector: Auto Ancillaries, industry: Wiring harness, story: control}
+  - {ticker: MOCK-PLFG, name: "Palar Forgings (Mock) Ltd", sector: Auto Ancillaries, industry: Castings, story: control}
+  - {ticker: MOCK-CVAX, name: "Cauvery Axles (Mock) Ltd", sector: Auto Ancillaries, industry: Castings, story: control}
+  - {ticker: MOCK-BHSP, name: "Bhima Spinning (Mock) Ltd", sector: Textiles, industry: Spinning, story: pledge_unwind}
+  - {ticker: MOCK-HGHT, name: "Hooghly Home Textiles (Mock) Ltd", sector: Textiles, industry: Home textiles, story: delisted}
+  - {ticker: MOCK-DMYR, name: "Damodar Yarns (Mock) Ltd", sector: Textiles, industry: Spinning, story: control}
+  - {ticker: MOCK-SBFB, name: "Subarnarekha Fabrics (Mock) Ltd", sector: Textiles, industry: Home textiles, story: control}
+  - {ticker: MOCK-GHIN, name: "Ghaghara Infra (Mock) Ltd", sector: Infrastructure, industry: EPC, story: pledge_unwind}
+  - {ticker: MOCK-GMRD, name: "Gomti Roadways (Mock) Ltd", sector: Infrastructure, industry: Roads, story: forensic_red_flag}
+  - {ticker: MOCK-KSCN, name: "Kosi Constructions (Mock) Ltd", sector: Infrastructure, industry: EPC, story: control}
+  - {ticker: MOCK-GNEP, name: "Gandak EPC (Mock) Ltd", sector: Infrastructure, industry: EPC, story: control}
+  - {ticker: MOCK-MJFD, name: "Manjira Foods (Mock) Ltd", sector: Consumer, industry: Packaged foods, story: deceptive_growth}
+  - {ticker: MOCK-MSPC, name: "Musi Personal Care (Mock) Ltd", sector: Consumer, industry: Personal care, story: control}
+  - {ticker: MOCK-BHBV, name: "Bhavani Beverages (Mock) Ltd", sector: Consumer, industry: Packaged foods, story: control}
+  - {ticker: MOCK-VGDR, name: "Vaigai Dairy (Mock) Ltd", sector: Consumer, industry: Packaged foods, story: control}
+  - {ticker: MOCK-SHDE, name: "Shipra Defence Electronics (Mock) Ltd", sector: Defence, industry: Electronics, story: order_book_surge}
+  - {ticker: MOCK-BTAC, name: "Betwa Aerocomponents (Mock) Ltd", sector: Defence, industry: Components, story: control}
+  - {ticker: MOCK-KNOP, name: "Ken Optronics (Mock) Ltd", sector: Defence, industry: Electronics, story: control}
+  - {ticker: MOCK-SNRS, name: "Sindh Radar Systems (Mock) Ltd", sector: Defence, industry: Electronics, story: control}
+  - {ticker: MOCK-LNFB, name: "Luni Fabrication (Mock) Ltd", sector: Engineering, industry: Fabrication, story: forensic_red_flag}
+  - {ticker: MOCK-BNPR, name: "Banas Precision (Mock) Ltd", sector: Engineering, industry: Precision components, story: illiquid}
+  - {ticker: MOCK-SBTL, name: "Sabarmati Tooling (Mock) Ltd", sector: Engineering, industry: Precision components, story: control}
+  - {ticker: MOCK-MHIN, name: "Mahi Industrial (Mock) Ltd", sector: Engineering, industry: Fabrication, story: control}

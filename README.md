@@ -16,4 +16,5 @@ Tests run against an embedded PostgreSQL 16 + pgvector (no Docker needed). Set
 ## Build status (PRD §15)
 
 1. Database and point-in-time layer — done
-2. Mock data generator — pending
+2. Mock data generator — done (`python -m data.mock generate`, see `docs/mock-universe.md`)
+3. Evidence module — pending

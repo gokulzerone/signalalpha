@@ -1,0 +1,6 @@
+# Universe definition (PRD §4). Bounds are configuration, not code.
+version: "universe-v1"
+market_cap_min_cr: 100
+market_cap_max_cr: 5000
+liquidity_floor_inr: 2500000     # ₹25 lakh/day, 30-day median traded value
+liquidity_window_days: 30

@@ -63,3 +63,8 @@ filterwarnings = ["error::DeprecationWarning:database", "error::DeprecationWarni
 
 [tool.coverage.run]
 source = ["scoring", "signals", "evidence", "backtesting", "database"]
+
+[tool.ruff.lint.per-file-ignores]
+# Mock document text and the row-mapping generator are dominated by long literal strings.
+"data/mock/templates.py" = ["E501"]
+"data/mock/generator.py" = ["E501"]

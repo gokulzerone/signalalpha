@@ -60,6 +60,10 @@ class Company(MockFlagMixin, Base):
     sector: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
     industry: Mapped[str | None] = mapped_column(String(64))
     listed_on: Mapped[date | None]
+    delisted_on: Mapped[date | None]
+    delisting_kind: Mapped[DelistingKind | None] = mapped_column(
+        Enum(DelistingKind, native_enum=False, length=16)
+    )
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
 
     universe_snapshots: Mapped[list[UniverseSnapshot]] = relationship(back_populates="company")
