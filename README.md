@@ -3,6 +3,14 @@
 Research terminal that surfaces fundamental inflections in Indian small-cap and micro-cap
 companies from public data only. `SignalAlpha-PRD.md` is the specification.
 
+## Run the whole stack
+
+```bash
+docker compose -f infra/docker-compose.yml up   # Postgres, Redis, MinIO, bootstrap (mock data), API, worker, beat, web
+```
+
+Then open http://localhost:3000. Without Docker: `make bootstrap`, then `make api` and `make web`.
+
 ## Development
 
 ```bash
@@ -24,4 +32,4 @@ Tests run against an embedded PostgreSQL 16 + pgvector (no Docker needed). Set
 7. API — done (all PRD §10 endpoints; research jobs inline or via Celery)
 8. Agents — done (eight agents with validators; Claude, recorded-fixture and offline template clients)
 9. UI — done (dashboard, company page, signals, data; see `docs/ui.md`)
-10. Live ingestion — pending
+10. Live ingestion — done (NSE EOD prices and announcements behind feature flags; see `docs/SOURCES.md`)

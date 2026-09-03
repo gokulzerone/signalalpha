@@ -1,25 +1,54 @@
-# Local stack (PRD §13, §17). Development and tests can instead use the embedded PostgreSQL
-# (SIGNALALPHA_DATABASE_URL=embedded), which needs no Docker.
+# `docker compose -f infra/docker-compose.yml up` boots the whole stack with mock data and no
+# external network (PRD §17). Live sources stay off unless their flags are set.
 services:
   postgres:
     image: pgvector/pgvector:pg16
-    environment:
-      POSTGRES_USER: signalalpha
-      POSTGRES_PASSWORD: signalalpha
-      POSTGRES_DB: signalalpha
+    environment: { POSTGRES_USER: signalalpha, POSTGRES_PASSWORD: signalalpha, POSTGRES_DB: signalalpha }
     ports: ["5432:5432"]
     volumes: ["pgdata:/var/lib/postgresql/data"]
+    healthcheck: { test: ["CMD-SHELL", "pg_isready -U signalalpha"], interval: 5s, retries: 20 }
   redis:
     image: redis:7-alpine
     ports: ["6379:6379"]
   minio:
     image: minio/minio:latest
     command: server /data --console-address ":9001"
-    environment:
-      MINIO_ROOT_USER: signalalpha
-      MINIO_ROOT_PASSWORD: signalalpha
+    environment: { MINIO_ROOT_USER: signalalpha, MINIO_ROOT_PASSWORD: signalalpha }
     ports: ["9000:9000", "9001:9001"]
     volumes: ["minio:/data"]
+  bootstrap:
+    build: { context: .., dockerfile: infra/Dockerfile.api }
+    command: python scripts/bootstrap_mock.py
+    environment: &env
+      SIGNALALPHA_DATABASE_URL: postgresql+psycopg://signalalpha:signalalpha@postgres:5432/signalalpha
+      SIGNALALPHA_OBJECT_STORE_DIR: /data/objects
+      SIGNALALPHA_BROKER_URL: redis://redis:6379/0
+      SIGNALALPHA_LLM_PROVIDER: template
+    volumes: ["objects:/data/objects"]
+    depends_on: { postgres: { condition: service_healthy } }
+  api:
+    build: { context: .., dockerfile: infra/Dockerfile.api }
+    environment: *env
+    volumes: ["objects:/data/objects"]
+    ports: ["8000:8000"]
+    depends_on: { bootstrap: { condition: service_completed_successfully } }
+  worker:
+    build: { context: .., dockerfile: infra/Dockerfile.api }
+    command: celery -A pipelines.celery_app:celery_app worker -Q ingest,parse,signals,agents,scores,backtest -l info
+    environment: *env
+    volumes: ["objects:/data/objects"]
+    depends_on: [api, redis]
+  beat:
+    build: { context: .., dockerfile: infra/Dockerfile.api }
+    command: celery -A pipelines.celery_app:celery_app beat -l info
+    environment: *env
+    depends_on: [worker]
+  web:
+    build: { context: .., dockerfile: infra/Dockerfile.web }
+    environment: { SIGNALALPHA_API_BASE: http://api:8000, SIGNALALPHA_DATASET: mock }
+    ports: ["3000:3000"]
+    depends_on: [api]
 volumes:
   pgdata:
   minio:
+  objects:

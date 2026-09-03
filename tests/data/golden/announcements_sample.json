@@ -1,0 +1,6 @@
+[
+  {"symbol": "TESTCO", "desc": "Receipt of Order", "attchmntText": "TestCo has received an order worth Rs. 45.20 crore from a state agency.", "an_dt": "02-Sep-2026 14:05:31", "attchmntFile": "https://example.invalid/att/order.pdf", "sm_name": "TestCo Limited"},
+  {"symbol": "TESTCO", "desc": "Outcome of Board Meeting - Unaudited Financial Results", "attchmntText": "", "an_dt": "12-Aug-2026 19:40:00", "attchmntFile": "", "sm_name": "TestCo Limited"},
+  {"symbol": "TESTCO", "desc": "Resignation of Chief Financial Officer", "attchmntText": "Mr X has resigned as CFO.", "an_dt": "01-Aug-2026 16:00:00", "attchmntFile": null, "sm_name": "TestCo Limited"},
+  {"symbol": "OTHERCO", "desc": "Credit Rating - CRISIL upgrade", "attchmntText": "", "an_dt": "01-Aug-2026 16:00:00", "attchmntFile": null, "sm_name": "OtherCo Limited"}
+]

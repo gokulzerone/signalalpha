@@ -1,0 +1,20 @@
+# Live source registry (PRD §5.1, §16). URLs and cadences are configuration, not code.
+# Every fetcher is behind a feature flag (SIGNALALPHA_LIVE_<NAME>=true) and off by default.
+user_agent: "SignalAlpha/0.1 (research terminal; public data only; contact: set SIGNALALPHA_CONTACT)"
+rate_limit_per_minute: 20
+request_timeout_seconds: 30
+respect_robots: true
+
+eod_prices:
+  # Security-wise bhav data with delivery percentage, one CSV per trading day.
+  url_template: "https://nsearchives.nseindia.com/products/content/sec_bhavdata_full_{ddmmyyyy}.csv"
+  publication_time_ist: "18:00"
+  series: ["EQ", "BE"]
+  parser_version: "nse-secbhav-1"
+
+nse_announcements:
+  # Corporate announcements feed per symbol (JSON). Attachments are fetched separately.
+  url_template: "https://www.nseindia.com/api/corporate-announcements?index=equities&symbol={symbol}&from_date={from_ddmmyyyy}&to_date={to_ddmmyyyy}"
+  warmup_url: "https://www.nseindia.com/"
+  parser_version: "nse-ann-1"
+  attachment_parser_version: "pdf-text-1"

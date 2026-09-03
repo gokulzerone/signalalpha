@@ -1,0 +1,17 @@
+FROM python:3.12-slim
+WORKDIR /app
+RUN pip install --no-cache-dir uv
+COPY pyproject.toml README.md ./
+COPY apps ./apps
+COPY database ./database
+COPY data ./data
+COPY pipelines ./pipelines
+COPY signals ./signals
+COPY agents ./agents
+COPY scoring ./scoring
+COPY backtesting ./backtesting
+COPY evidence ./evidence
+COPY scripts ./scripts
+RUN uv pip install --system -e .
+ENV SIGNALALPHA_DATABASE_URL=postgresql+psycopg://signalalpha:signalalpha@postgres:5432/signalalpha
+CMD ["uvicorn", "apps.api.main:app", "--factory", "--host", "0.0.0.0", "--port", "8000"]

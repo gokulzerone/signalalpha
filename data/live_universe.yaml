@@ -1,0 +1,4 @@
+# Small real universe for the feature-flagged live sources (PRD §17). Fill in NSE symbols
+# of real companies to track; nothing is shipped here so that no market data is fabricated.
+# Each entry: {ticker: NSE symbol, name: registered name, isin: INE..., sector: ...}
+companies: []

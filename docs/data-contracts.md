@@ -182,3 +182,24 @@ no survivorship bias.
 * Runs are cached on `(company, agent, as_of, prompt_version, input_hash, model_id)`;
   tokens and cost are stored per run and a per-company daily budget stops runaway loops.
   Prompts are versioned files in `agents/prompts/`.
+
+## Live ingestion (build step 10)
+
+* Every live source is behind a feature flag (`SIGNALALPHA_LIVE_EOD_PRICES`,
+  `SIGNALALPHA_LIVE_NSE_ANNOUNCEMENTS`), off by default. URL templates, cadence and parser
+  versions live in `data/sources.yaml`; the small real universe lives in
+  `data/live_universe.yaml` (shipped empty so that no market data is invented).
+* `data/fetchers/transport.py` identifies itself, checks `robots.txt`, rate-limits and
+  raises `FetchError` on anything but a 200 with a body. `FakeTransport` serves tests.
+* `data/ingest.py` stores every fetched file raw-first through `DocumentWriter` (dedup by
+  SHA-256), parses with a versioned parser, writes derived rows with provenance and
+  `is_mock = false`, and updates `data_quality` (fetch/parse failure counts, last error,
+  latest `public_at`) before re-raising any failure so the Celery task fails loudly.
+* Announcement attachments are fetched, kept as raw PDF bytes, and their text layer appended
+  to the announcement document; a scanned PDF is recorded as a parse failure (no OCR in v1)
+  and the announcement row carries `summary = attachment_unavailable=true`.
+* Celery beat schedules follow PRD §5.1 (announcements every 15 minutes in market hours,
+  hourly otherwise; prices after the daily publication). `docs/SOURCES.md` records each
+  source's URL, access method, terms relied on and review date (PRD §16).
+* `infra/docker-compose.yml` boots Postgres+pgvector, Redis, MinIO, a bootstrap job (mock
+  universe through agents), the API, a worker, beat and the web app.
