@@ -437,6 +437,8 @@ def build_plan(bp: Blueprint, p: Params, rng: random.Random, base_rev: list[floa
         for t in range(n):
             plan.rec_days[t] = 70 + max(0, t - 3) * 8
             plan.st_debt[t] = p.st_debt * (1 + 0.18 * max(0, t - 3))
+            # Cash is kept large by ever-rising term debt while short-term debt also climbs.
+            plan.lt_debt[t] = (p.lt_debt + p.base_revenue_q * 0.8) * (1 + 0.30 * max(0, t - 3))
             plan.contingent_ratio[t] = p.contingent_ratio * (5 if t >= s + 2 else 1)
             if t >= s + 2:
                 plan.audit_opinion[t] = AuditOpinion.EMPHASIS_OF_MATTER
@@ -680,6 +682,14 @@ def synthesize_financials(p: Params, plan: StoryPlan, base_rev: list[float]) -> 
         cfi = -capex
         cff = (debt - prev_debt) - fin + infusion
         cash = cash + cfo + cfi + cff
+        # A company cannot hold negative cash: shortfalls are funded by short-term borrowing.
+        min_cash = q2(float(rev) * 0.05)
+        if cash < min_cash:
+            shortfall = min_cash - cash
+            st += shortfall
+            debt += shortfall
+            cff += shortfall
+            cash = min_cash
         net_worth = net_worth + pat + infusion
         total_assets = net_worth + debt + pay
         out.append(

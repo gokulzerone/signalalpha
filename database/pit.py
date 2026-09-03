@@ -41,6 +41,7 @@ from database.models import (
     PublicAtMixin,
     RawDocument,
     Shareholding,
+    Signal,
     Source,
     SurveillanceEvent,
     UniverseSnapshot,
@@ -151,6 +152,30 @@ class PointInTimeSession:
             rows = rows[:periods]
         return rows
 
+    def financial_history(self, company_id: int) -> Sequence[Financial]:
+        """Every non-superseded financial row public at as_of, across all filings.
+
+        Unlike :meth:`financials` this does not resolve restatements; consumers that
+        materialise earlier instants (the signal runner) resolve per instant with the same
+        rule as ``sa_financials_as_of``.
+        """
+        stmt = self.restrict(
+            select(Financial).where(
+                Financial.company_id == company_id, Financial.is_superseded.is_(False)
+            ),
+            Financial,
+        )
+        return self.session.scalars(stmt.order_by(Financial.public_at, Financial.id)).all()
+
+    def shareholding_history(self, company_id: int) -> Sequence[Shareholding]:
+        stmt = self.restrict(
+            select(Shareholding).where(
+                Shareholding.company_id == company_id, Shareholding.is_superseded.is_(False)
+            ),
+            Shareholding,
+        )
+        return self.session.scalars(stmt.order_by(Shareholding.public_at, Shareholding.id)).all()
+
     def financials_preferring_consolidated(
         self, company_id: int, *, period_months: int = 3, periods: int | None = None
     ) -> list[Financial]:
@@ -232,6 +257,20 @@ class PointInTimeSession:
             IndexConstituent,
         )
         return sorted({row.company_id for row in self.session.scalars(stmt).all()})
+
+    # ------------------------------------------------------------------ signals
+    def signals(
+        self,
+        company_id: int,
+        since: date | None = None,
+        signal_types: Iterable[str] | None = None,
+    ) -> Sequence[Signal]:
+        stmt = self.restrict(select(Signal).where(Signal.company_id == company_id), Signal)
+        if since is not None:
+            stmt = stmt.where(Signal.public_at > end_of_day(since))
+        if signal_types is not None:
+            stmt = stmt.where(Signal.signal_type.in_(list(signal_types)))
+        return self.session.scalars(stmt.order_by(Signal.public_at.desc(), Signal.id)).all()
 
     # ----------------------------------------------------------------- evidence
     def evidence_record(self, evidence_id: int) -> Evidence | None:

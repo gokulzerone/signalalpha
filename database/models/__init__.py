@@ -45,6 +45,7 @@ from database.models.ownership import (
     TradeSide,
 )
 from database.models.quality import DataQuality
+from database.models.signals import Signal
 
 #: Every model that carries ``public_at`` and is therefore subject to point-in-time filtering.
 POINT_IN_TIME_MODELS: tuple[type[PublicAtMixin], ...] = (
@@ -62,6 +63,7 @@ POINT_IN_TIME_MODELS: tuple[type[PublicAtMixin], ...] = (
     Price,
     IndexConstituent,
     Evidence,
+    Signal,
 )
 
 __all__ = [
@@ -103,6 +105,7 @@ __all__ = [
     "RatingAction",
     "RawDocument",
     "Shareholding",
+    "Signal",
     "Source",
     "SurveillanceEvent",
     "SurveillanceEventType",

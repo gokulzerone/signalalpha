@@ -71,3 +71,23 @@ no survivorship bias.
 * `evidence.viewer.document_view` returns the document text with page offsets and the
   highlighted span for the UI; the API serves it at
   `GET /api/v1/companies/{id}/documents/{raw_document_id}?highlight={evidence_id}`.
+
+## Signals (build step 4)
+
+* `signals/catalogue.yaml` holds every threshold and the `config_version` stamped on each
+  signal. `signals/detectors/` holds one pure function per catalogue entry, operating on a
+  `DetectionContext` (plain dataclasses), so detectors are unit-tested without a database.
+* The runner (`signals/runner.py`) evaluates each company at every instant a record became
+  public (plus a weekly cadence for price-derived signals). At instant `T` it materialises
+  the state visible at `T` (re-resolving restatements with the same rule as the SQL
+  functions; a test asserts equivalence) and keeps only candidates whose `public_at == T`.
+  A signal therefore never depends on later data, and its timestamp is the filing's.
+* Signals are idempotent on `(company, signal_type, dedupe_key)`; re-running the detector
+  creates nothing new. `source_records` lists the rows the signal was computed from and
+  `parameters` exposes every intermediate value (PRD §2.7).
+* Business signals extract order values and capacity quanta from the announcement text with
+  deterministic regexes and store the quoted span as parser evidence; the sum-of-orders
+  arithmetic for the Business agent (step 8) reuses these rows.
+* Agent-proposed signals go through `signals/validators.py`: a proposal is accepted only if a
+  deterministic signal of that type already exists for the company (matched by `dedupe_key`
+  or by `public_at` within a day). Nothing an agent says can create a signal.

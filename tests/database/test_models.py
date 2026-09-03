@@ -19,6 +19,9 @@ def test_every_point_in_time_model_carries_provenance() -> None:
         if mapper.local_table.name == "evidence":
             # Evidence pins its text version via document_text_id and records created_by.
             assert {"document_text_id", "created_by", "created_at"} <= cols
+        elif mapper.local_table.name == "signals":
+            # Signals derive from several records; provenance is the source_records list.
+            assert {"source_records", "detector_version", "detected_at", "config_version"} <= cols
         elif mapper.local_table.name != "raw_documents":
             assert {"raw_document_id", "parser_version", "ingested_at"} <= cols, model.__name__
 

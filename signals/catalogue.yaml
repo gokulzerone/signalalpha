@@ -1,0 +1,164 @@
+# Signal catalogue (PRD §6.2). Every threshold lives here, never in code.
+version: "signals-v1"
+
+# Cadence (days) at which price-derived signals are evaluated.
+market_signal_cadence_days: 7
+# Keywords that identify an institution in bulk-deal counterparties.
+institution_keywords: ["fund", "mutual", "insurance", "fpi", "capital", "investors", "trust", "asset management"]
+
+signals:
+  # ---------------------------------------------------------------- financial
+  revenue_acceleration:
+    family: financial
+    direction: 1
+    description: "YoY revenue growth in the latest quarter exceeds the trailing-4-quarter average YoY growth by >= min_excess_pp."
+    params: {min_excess_pp: 10.0, magnitude_full_pp: 30.0}
+  margin_inflection:
+    family: financial
+    direction: 0
+    description: "EBITDA margin differs from its trailing-4-quarter average by >= min_change_bp for 2 consecutive quarters; direction follows the sign."
+    params: {min_change_bp: 200, magnitude_full_bp: 600}
+  operating_leverage:
+    family: financial
+    direction: 1
+    description: "YoY EBITDA growth exceeds YoY revenue growth by >= ratio for 2 consecutive quarters with positive revenue growth."
+    params: {min_ratio: 1.5, magnitude_full_ratio: 3.0}
+  cash_conversion_improvement:
+    family: financial
+    direction: 1
+    description: "Trailing-12-month CFO / EBITDA rises above threshold after being below it."
+    params: {threshold: 0.7, magnitude_full: 1.2}
+  working_capital_release:
+    family: financial
+    direction: 1
+    description: "Receivable days or inventory days fall by >= min_days YoY."
+    params: {min_days: 15, magnitude_full_days: 45}
+  deleveraging:
+    family: financial
+    direction: 1
+    description: "Net debt / TTM EBITDA falls below threshold from above, or net debt turns to net cash."
+    params: {threshold: 1.0}
+  capex_cycle_start:
+    family: financial
+    direction: 1
+    description: "Capex / depreciation >= threshold for the first time in lookback_quarters."
+    params: {threshold: 2.0, lookback_quarters: 8, magnitude_full: 4.0}
+  # ---------------------------------------------------------------- ownership
+  promoter_stake_increase:
+    family: ownership
+    direction: 1
+    description: "Promoter holding rises >= min_pp QoQ, or open-market insider buys >= min_value_cr in a disclosure."
+    params: {min_pp: 0.5, magnitude_full_pp: 3.0, min_value_cr: 1.0, magnitude_full_value_cr: 10.0}
+  promoter_stake_decrease:
+    family: ownership
+    direction: -1
+    description: "Promoter holding falls >= min_pp QoQ, or open-market insider sells >= min_value_cr."
+    params: {min_pp: 0.5, magnitude_full_pp: 3.0, min_value_cr: 1.0, magnitude_full_value_cr: 10.0}
+  pledge_reduction:
+    family: ownership
+    direction: 1
+    description: "Pledged share of promoter holding falls >= min_pp QoQ, or a release disclosure >= min_pp."
+    params: {min_pp: 5.0, magnitude_full_pp: 40.0}
+  pledge_increase:
+    family: ownership
+    direction: -1
+    description: "Pledged share of promoter holding rises >= min_pp QoQ, or a creation disclosure >= min_pp."
+    params: {min_pp: 5.0, magnitude_full_pp: 40.0}
+  pledge_invocation:
+    family: ownership
+    direction: -1
+    description: "A pledge invocation disclosure."
+    params: {magnitude_full_pp: 20.0}
+  institutional_entry:
+    family: ownership
+    direction: 1
+    description: "A named institution >= min_pct appears in the shareholding pattern for the first time, or an institution buys in a bulk deal."
+    params: {min_pct: 1.0, magnitude_full_pct: 5.0}
+  shareholder_count_spike:
+    family: ownership
+    direction: -1
+    description: "Retail shareholder count rises >= min_growth QoQ."
+    params: {min_growth: 0.25, magnitude_full_growth: 1.0}
+  # ----------------------------------------------------------------- business
+  order_win:
+    family: business
+    direction: 1
+    description: "Announced order value >= min_pct_ttm_revenue of trailing-12-month revenue; the value must be a verbatim span of the announcement."
+    params: {min_pct_ttm_revenue: 0.10, magnitude_full_pct: 0.60}
+  capacity_expansion:
+    family: business
+    direction: 1
+    description: "Announced capacity expansion with a disclosed quantum."
+    params: {magnitude_full_pct: 100}
+  credit_rating_upgrade:
+    family: business
+    direction: 1
+    description: "Rating agency upgrade."
+    params: {magnitude: 0.6}
+  credit_rating_downgrade:
+    family: business
+    direction: -1
+    description: "Rating agency downgrade."
+    params: {magnitude: 0.8}
+  key_person_exit:
+    family: business
+    direction: -1
+    description: "Resignation of CFO, auditor or independent director."
+    params: {magnitude: 0.7}
+  auditor_change:
+    family: business
+    direction: -1
+    description: "Auditor change other than routine rotation."
+    params: {magnitude: 0.8}
+  # ------------------------------------------------------------------- market
+  delivery_volume_shift:
+    family: market
+    direction: 1
+    description: "20-day average delivery percentage and traded value both exceed their trailing 90-day averages by >= min_uplift."
+    params: {short_days: 20, long_days: 90, min_uplift: 0.20, magnitude_full_uplift: 1.0}
+  surveillance_entry:
+    family: market
+    direction: -1
+    description: "Entry into (or stage rise within) GSM/ASM."
+    params: {magnitude: 0.8}
+  surveillance_exit:
+    family: market
+    direction: 1
+    description: "Exit from GSM/ASM."
+    params: {magnitude: 0.4}
+  price_lagging_fundamentals:
+    family: market
+    direction: 1
+    description: "90-day price change below the sector median while revenue_acceleration or margin_inflection is active."
+    params: {window_days: 90, active_signal_days: 120, magnitude_full_gap: 0.30}
+  # ------------------------------------------------------------------ forensic
+  related_party_revenue:
+    family: forensic
+    direction: -1
+    description: "Related-party sales >= min_share of annual revenue."
+    params: {min_share: 0.15, magnitude_full_share: 0.50}
+  receivables_outrunning_revenue:
+    family: forensic
+    direction: -1
+    description: "Annual receivables growth exceeds revenue growth by >= min_gap for 2 consecutive years."
+    params: {min_gap: 0.15, magnitude_full_gap: 0.60}
+  cash_vs_debt_anomaly:
+    family: forensic
+    direction: -1
+    description: "Gross cash >= min_cash_to_revenue of TTM revenue while short-term borrowings rise >= min_st_debt_growth YoY."
+    params: {min_cash_to_revenue: 0.15, min_st_debt_growth: 0.25, magnitude_full_growth: 1.0}
+  audit_qualification:
+    family: forensic
+    direction: -1
+    description: "Qualified/adverse/disclaimer opinion or going-concern note (magnitude 1.0); emphasis of matter (magnitude 0.5)."
+    params: {emphasis_magnitude: 0.5}
+  contingent_liability_spike:
+    family: forensic
+    direction: -1
+    description: "Contingent liabilities >= min_share of revenue and >= min_ratio times the prior year."
+    params: {min_share: 0.10, min_ratio: 2.0, magnitude_full_share: 0.50}
+  frequent_fund_raise:
+    family: forensic
+    direction: -1
+    description: "Two or more discounted preferential issues/warrants to promoters within lookback_days."
+    params: {lookback_days: 730, magnitude: 0.8}
