@@ -28,6 +28,7 @@ from database.models.events import (
     SurveillanceEventType,
     SurveillanceFramework,
 )
+from database.models.evidence import AGENT_CREATOR_PREFIX, PARSER_CREATOR, Evidence
 from database.models.financials import AuditOpinion, Financial
 from database.models.market import IndexConstituent, Price
 from database.models.ownership import (
@@ -60,9 +61,12 @@ POINT_IN_TIME_MODELS: tuple[type[PublicAtMixin], ...] = (
     SurveillanceEvent,
     Price,
     IndexConstituent,
+    Evidence,
 )
 
 __all__ = [
+    "AGENT_CREATOR_PREFIX",
+    "PARSER_CREATOR",
     "POINT_IN_TIME_MODELS",
     "Announcement",
     "AnnouncementCategory",
@@ -78,6 +82,7 @@ __all__ = [
     "DealType",
     "DelistingKind",
     "DocumentText",
+    "Evidence",
     "Exchange",
     "ExtractionMethod",
     "Filing",

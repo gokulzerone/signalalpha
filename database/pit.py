@@ -29,6 +29,7 @@ from database.models import (
     CorporateAction,
     CreditRating,
     DocumentText,
+    Evidence,
     Filing,
     FilingType,
     Financial,
@@ -231,6 +232,17 @@ class PointInTimeSession:
             IndexConstituent,
         )
         return sorted({row.company_id for row in self.session.scalars(stmt).all()})
+
+    # ----------------------------------------------------------------- evidence
+    def evidence_record(self, evidence_id: int) -> Evidence | None:
+        stmt = self.restrict(select(Evidence).where(Evidence.id == evidence_id), Evidence)
+        return self.session.scalars(stmt).first()
+
+    def evidence(self, company_id: int, ids: Iterable[int] | None = None) -> Sequence[Evidence]:
+        stmt = self.restrict(select(Evidence).where(Evidence.company_id == company_id), Evidence)
+        if ids is not None:
+            stmt = stmt.where(Evidence.id.in_(list(ids)))
+        return self.session.scalars(stmt.order_by(Evidence.id)).all()
 
     # ---------------------------------------------------------------- documents
     def filings(self, company_id: int, filing_type: FilingType | None = None) -> Sequence[Filing]:

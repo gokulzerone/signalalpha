@@ -10,6 +10,7 @@ from zoneinfo import ZoneInfo
 
 from sqlalchemy.orm import Session
 
+from data.documents import page_offsets_for
 from database.models import (
     Announcement,
     AnnouncementCategory,
@@ -89,7 +90,7 @@ def make_raw_document(
             extraction_method=ExtractionMethod.TEXT,
             text=body,
             char_count=len(body),
-            page_offsets=[0],
+            page_offsets=page_offsets_for(body),
         )
     )
     session.flush()

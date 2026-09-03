@@ -16,7 +16,10 @@ def test_every_point_in_time_model_carries_provenance() -> None:
         assert mapper is not None
         cols = {c.key for c in mapper.columns}
         assert {"public_at", "is_mock"} <= cols, model.__name__
-        if mapper.local_table.name != "raw_documents":
+        if mapper.local_table.name == "evidence":
+            # Evidence pins its text version via document_text_id and records created_by.
+            assert {"document_text_id", "created_by", "created_at"} <= cols
+        elif mapper.local_table.name != "raw_documents":
             assert {"raw_document_id", "parser_version", "ingested_at"} <= cols, model.__name__
 
 

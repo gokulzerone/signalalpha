@@ -54,3 +54,20 @@ listing status, surveillance stage and the `in_universe` decision (with `config_
 The universe on date D is each company's latest snapshot dated on or before D. Delisting,
 suspension and merger create a snapshot with the new status, so the historical universe has
 no survivorship bias.
+
+## Evidence (build step 3)
+
+* `evidence` rows are verbatim spans `[char_start, char_end)` of one `document_texts` row
+  (`document_text_id` pins the parser version). `public_at` equals the document's
+  publication instant (the PRD's `publication_date`).
+* A `BEFORE INSERT` trigger re-checks the span against the stored text, the document
+  ownership and `public_at`; a `BEFORE UPDATE` trigger makes rows immutable. Deleting is
+  allowed only so that a mock dataset can be regenerated.
+* `confidence` defaults by extraction method (structured 1.0, table 0.95, text 0.9, OCR 0.6)
+  and can only be overridden by `created_by = 'parser'`.
+* Claims are validated by `evidence.claims.validate_claims`: non-empty `evidence_ids` is a
+  schema rule (Pydantic), and every id must belong to the claim's company, the same dataset,
+  and be public at the run's `as_of`.
+* `evidence.viewer.document_view` returns the document text with page offsets and the
+  highlighted span for the UI; the API serves it at
+  `GET /api/v1/companies/{id}/documents/{raw_document_id}?highlight={evidence_id}`.

@@ -17,4 +17,5 @@ Tests run against an embedded PostgreSQL 16 + pgvector (no Docker needed). Set
 
 1. Database and point-in-time layer — done
 2. Mock data generator — done (`python -m data.mock generate`, see `docs/mock-universe.md`)
-3. Evidence module — pending
+3. Evidence module — done (span validation in Python and in a DB trigger; viewer endpoint)
+4. Signals — pending
