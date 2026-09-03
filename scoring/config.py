@@ -50,6 +50,21 @@ class OpportunityConfig(BaseModel):
     risk_penalty: RiskPenalty
 
 
+class ScenarioDelta(BaseModel):
+    growth_delta: float
+    margin_delta: float
+    multiple_pct: float
+
+
+class ValuationScenarioConfig(BaseModel):
+    version: str
+    horizon_years: int
+    bear: ScenarioDelta
+    base: ScenarioDelta
+    bull: ScenarioDelta
+    bounds: dict[str, tuple[float, float]]
+
+
 class ScoreConfig(BaseModel):
     version: str
     windows: Windows
@@ -59,6 +74,7 @@ class ScoreConfig(BaseModel):
     risk: WeightedConfig
     attention_gap: WeightedConfig
     opportunity: OpportunityConfig
+    valuation_scenarios: ValuationScenarioConfig
 
 
 @lru_cache(maxsize=4)

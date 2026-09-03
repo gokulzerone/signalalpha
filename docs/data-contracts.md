@@ -134,3 +134,25 @@ no survivorship bias.
   sample are flagged `low_sample`.
 * Score deciles are recomputed at each rebalance date from data public at that date
   (`compute_universe_inputs` + `score_universe`), never read from stored scores.
+
+## API (build step 7)
+
+* Every endpoint is under `/api/v1`, behind a single `X-API-Key` (disabled when the key is
+  unset, development only). Every response is an envelope with `as_of`, `dataset` and a
+  `data_quality` summary. `dataset=mock|live` selects one dataset per request; mock and live
+  rows are never mixed.
+* `as_of` accepts `YYYY-MM-DD` (end of that day IST) or an ISO instant with an offset; naive
+  datetimes are rejected. List endpoints paginate (`page`, `page_size`, `total`).
+* Company rows for the dashboard carry the six scores, the latest thesis lines when a
+  validated thesis exists, and otherwise the strongest positive/negative signal in the window.
+* `GET /companies/{id}/valuation` serves three scenarios computed in Python from assumption
+  parameters (agent-supplied when a validated Valuation run exists, otherwise defaults around
+  trailing values, flagged `source`), plus the formula spec the frontend recomputes with.
+* `GET /companies/{id}/thesis` serves a thesis only together with its contradiction analysis;
+  until step 8 it returns an explanatory message.
+* Research jobs (`POST /research/{id}`, `POST /agents/{name}/{id}`) create a `research_runs`
+  row and return 202 with the run id; `GET /runs/{id}` reports status and steps. Jobs run on
+  Celery when `SIGNALALPHA_BROKER_URL` is set, otherwise in an in-process worker thread so
+  the stack works with no network.
+* The API never uses the words "buy", "sell", "target price" or "recommendation" (PRD §16);
+  a test asserts this on the valuation payload.

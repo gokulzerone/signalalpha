@@ -1,5 +1,6 @@
 """All ORM models. Import this module to register every table on ``Base.metadata``."""
 
+from database.models.agents import AgentRun, ResearchRun, RunStatus
 from database.models.backtest import BacktestRun, ScorePerformance, SignalPerformance
 from database.models.base import (
     Base,
@@ -72,6 +73,7 @@ __all__ = [
     "AGENT_CREATOR_PREFIX",
     "PARSER_CREATOR",
     "POINT_IN_TIME_MODELS",
+    "AgentRun",
     "Announcement",
     "AnnouncementCategory",
     "AuditOpinion",
@@ -107,6 +109,8 @@ __all__ = [
     "PublicAtMixin",
     "RatingAction",
     "RawDocument",
+    "ResearchRun",
+    "RunStatus",
     "Score",
     "ScorePerformance",
     "Shareholding",

@@ -47,3 +47,17 @@ opportunity:
     start: 40              # no penalty at or below this Risk score
     full: 100
     max_penalty: 0.8
+
+valuation_scenarios:
+  version: "valuation-v1"
+  horizon_years: 2
+  # default scenario deltas around trailing values (used until a Valuation agent run exists)
+  bear: {growth_delta: -0.10, margin_delta: -0.03, multiple_pct: -0.25}
+  base: {growth_delta: 0.0, margin_delta: 0.0, multiple_pct: 0.0}
+  bull: {growth_delta: 0.10, margin_delta: 0.03, multiple_pct: 0.25}
+  # sanity bounds for agent-supplied assumption parameters (PRD §7 Valuation validator)
+  bounds:
+    revenue_growth: [-0.5, 1.0]
+    ebitda_margin: [-0.2, 0.6]
+    exit_ev_ebitda: [1.0, 60.0]
+    horizon_years: [1, 5]

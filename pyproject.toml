@@ -53,8 +53,12 @@ files = ["apps", "database", "data", "pipelines", "signals", "agents", "scoring"
 exclude = ["database/migrations/versions"]
 
 [[tool.mypy.overrides]]
-module = ["pgserver", "pgserver.*", "celery", "celery.*", "pgvector.*"]
+module = ["pgserver", "pgserver.*", "celery", "celery.*", "kombu", "kombu.*", "pgvector.*"]
 ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ["pipelines.tasks"]
+disallow_untyped_decorators = false
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

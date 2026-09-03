@@ -136,3 +136,32 @@ def mock_signals(mock_engine: Engine, mock_universe: GenerationReport) -> int:
         results = detect_universe_signals(sess, as_of=date(2026, 8, 31), is_mock=True)
         sess.commit()
     return sum(len(r.created) for r in results.values())
+
+
+@pytest.fixture(scope="session")
+def mock_scores(mock_engine: Engine, mock_signals: int) -> int:
+    """Scores for the mock universe at two dates, committed once."""
+    from datetime import date
+
+    from scoring.pipeline import run_scores
+
+    rows = 0
+    with Session(mock_engine, expire_on_commit=False) as sess:
+        for on in (date(2025, 12, 31), date(2026, 8, 31)):
+            rows += run_scores(sess, as_of=on, is_mock=True).rows_written
+        sess.commit()
+    return rows
+
+
+@pytest.fixture(scope="session")
+def mock_backtest(mock_engine: Engine, mock_signals: int) -> int:
+    """One committed backtest run over the mock universe (signals only)."""
+    from datetime import date
+
+    from backtesting.engine import run_backtest
+
+    with Session(mock_engine, expire_on_commit=False) as sess:
+        report = run_backtest(sess, as_of=date(2026, 8, 31), is_mock=True, since=date(2023, 6, 30))
+        sess.commit()
+        assert report.run_id is not None
+        return report.run_id
