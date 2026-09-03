@@ -5,11 +5,11 @@ from __future__ import annotations
 import random
 from datetime import date, datetime, timedelta
 
-from sqlalchemy import select
+from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
 
 from data.mock.synth import Story, load_blueprints
-from database.models import Company, Evidence
+from database.models import Company, Evidence, Signal
 from database.pit import IST, PointInTimeSession
 from signals.config import load_catalogue
 from signals.context import HistoryLoader, prefer_consolidated, resolve_periods
@@ -47,6 +47,12 @@ def test_python_restatement_resolution_matches_sql(mock_session: Session) -> Non
         ]
 
 
+def _reset(session: Session, company: Company) -> None:
+    """Remove any committed signals for the company so detection runs from scratch."""
+    session.execute(delete(Signal).where(Signal.company_id == company.id))
+    session.flush()
+
+
 def _types(session: Session, company: Company) -> dict[str, list]:  # type: ignore[type-arg]
     out: dict[str, list] = {}  # type: ignore[type-arg]
     for s in PointInTimeSession(session, AS_OF, is_mock=True).signals(company.id):
@@ -56,6 +62,7 @@ def _types(session: Session, company: Company) -> dict[str, list]:  # type: igno
 
 def test_planted_stories_produce_expected_signals(mock_session: Session) -> None:
     order = _company(mock_session, Story.ORDER_BOOK_SURGE)
+    _reset(mock_session, order)
     result = detect_company_signals(mock_session, order, as_of=AS_OF, is_mock=True)
     types = _types(mock_session, order)
     assert {"order_win", "capacity_expansion", "revenue_acceleration"} <= set(types), set(types)
@@ -71,6 +78,7 @@ def test_planted_stories_produce_expected_signals(mock_session: Session) -> None
     assert again.created == [] and again.duplicates_skipped > 0
 
     margin = _company(mock_session, Story.MARGIN_TURNAROUND)
+    _reset(mock_session, margin)
     detect_company_signals(mock_session, margin, as_of=AS_OF, is_mock=True)
     types = _types(mock_session, margin)
     assert {"margin_inflection", "operating_leverage", "credit_rating_upgrade"} <= set(types), set(
@@ -79,11 +87,13 @@ def test_planted_stories_produce_expected_signals(mock_session: Session) -> None
     assert all(s.direction == 1 for s in types["margin_inflection"])
 
     pledge = _company(mock_session, Story.PLEDGE_UNWIND)
+    _reset(mock_session, pledge)
     detect_company_signals(mock_session, pledge, as_of=AS_OF, is_mock=True)
     types = _types(mock_session, pledge)
     assert {"pledge_reduction", "promoter_stake_increase"} <= set(types), set(types)
 
     forensic = _company(mock_session, Story.FORENSIC_RED_FLAG)
+    _reset(mock_session, forensic)
     detect_company_signals(mock_session, forensic, as_of=AS_OF, is_mock=True)
     types = _types(mock_session, forensic)
     assert {
@@ -97,6 +107,7 @@ def test_planted_stories_produce_expected_signals(mock_session: Session) -> None
     } <= set(types), set(types)
 
     deceptive = _company(mock_session, Story.DECEPTIVE_GROWTH)
+    _reset(mock_session, deceptive)
     detect_company_signals(mock_session, deceptive, as_of=AS_OF, is_mock=True)
     types = _types(mock_session, deceptive)
     assert {
@@ -109,6 +120,7 @@ def test_planted_stories_produce_expected_signals(mock_session: Session) -> None
     } <= set(types), set(types)
 
     control = _company(mock_session, Story.CONTROL, 2)
+    _reset(mock_session, control)
     detect_company_signals(mock_session, control, as_of=AS_OF, is_mock=True)
     types = _types(mock_session, control)
     forensic_types = {
@@ -119,6 +131,7 @@ def test_planted_stories_produce_expected_signals(mock_session: Session) -> None
 
 def test_signals_respect_point_in_time(mock_session: Session) -> None:
     company = _company(mock_session, Story.ORDER_BOOK_SURGE, 1)
+    _reset(mock_session, company)
     early = date(2024, 3, 31)
     result = detect_company_signals(mock_session, company, as_of=early, is_mock=True)
     limit = PointInTimeSession(mock_session, early, is_mock=True).as_of
@@ -130,6 +143,7 @@ def test_signals_respect_point_in_time(mock_session: Session) -> None:
 
 def test_validator_only_accepts_computed_signals(mock_session: Session) -> None:
     company = _company(mock_session, Story.ORDER_BOOK_SURGE)
+    _reset(mock_session, company)
     detect_company_signals(mock_session, company, as_of=AS_OF, is_mock=True)
     pit = PointInTimeSession(mock_session, AS_OF, is_mock=True)
     real = pit.signals(company.id, signal_types=["order_win"])[0]

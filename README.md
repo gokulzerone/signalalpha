@@ -20,4 +20,5 @@ Tests run against an embedded PostgreSQL 16 + pgvector (no Docker needed). Set
 3. Evidence module — done (span validation in Python and in a DB trigger; viewer endpoint)
 4. Signals — done (30 catalogue types, point-in-time runner, proposal validator)
 5. Scores — done (five percentile scores + Opportunity, all components exposed)
-6. Backtesting — pending
+6. Backtesting — done (point-in-time simulator, execution model, signal and score-decile performance tables)
+7. API — partially done (evidence and document endpoints); rest pending

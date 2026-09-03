@@ -1,0 +1,22 @@
+# Backtest configuration (PRD §11).
+version: "backtest-v1"
+horizons_days: [30, 90, 180, 365]
+benchmarks:
+  mock: ["MOCK-SMALLCAP"]
+  live: ["NIFTY SMALLCAP 250", "NIFTY MICROCAP 250"]
+min_sample: 30                  # results with n below this are flagged low_sample
+include_illiquid: false         # illiquid names are excluded from backtests by default (PRD §4)
+score_deciles: 10
+score_rebalance_months: 1       # scoring dates: month ends
+execution:
+  entry: next_day_open          # entry at the next trading day's open after public_at
+  base_cost_bps: 20             # brokerage, STT, exchange charges, one way
+  slippage_bps_min: 5
+  slippage_bps_max: 150
+  slippage_k: 40                # slippage_bps = k / sqrt(ADV in ₹ crore), clipped
+  adv_window_days: 20
+  position_cap_pct_of_adv: 5    # position size capped at this % of average daily traded value
+  portfolio_capital_cr: 10
+terminal_returns:
+  compulsory: -1.0
+  voluntary: last_price

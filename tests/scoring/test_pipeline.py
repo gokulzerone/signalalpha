@@ -11,7 +11,6 @@ from data.mock.synth import Story, load_blueprints
 from database.models import Company
 from database.pit import PointInTimeSession
 from scoring.pipeline import run_scores
-from signals.runner import detect_universe_signals
 
 AS_OF = date(2025, 12, 31)
 
@@ -21,8 +20,8 @@ def _company(session: Session, story: Story, nth: int = 0) -> Company:
     return session.scalars(select(Company).where(Company.ticker == ticker)).one()
 
 
-def test_scores_on_mock_universe(mock_session: Session) -> None:
-    detect_universe_signals(mock_session, as_of=AS_OF, is_mock=True)
+def test_scores_on_mock_universe(mock_session: Session, mock_signals: int) -> None:
+    assert mock_signals > 0
     run = run_scores(mock_session, as_of=AS_OF, is_mock=True)
     assert run.rows_written == 6 * len(run.results) and len(run.results) >= 30
 

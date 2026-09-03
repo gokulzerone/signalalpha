@@ -123,3 +123,16 @@ def mock_session(mock_engine: Engine, mock_universe: GenerationReport) -> Iterat
         finally:
             sess.close()
             transaction.rollback()
+
+
+@pytest.fixture(scope="session")
+def mock_signals(mock_engine: Engine, mock_universe: GenerationReport) -> int:
+    """Signals for the whole mock universe, detected once and committed (idempotent)."""
+    from datetime import date
+
+    from signals.runner import detect_universe_signals
+
+    with Session(mock_engine, expire_on_commit=False) as sess:
+        results = detect_universe_signals(sess, as_of=date(2026, 8, 31), is_mock=True)
+        sess.commit()
+    return sum(len(r.created) for r in results.values())

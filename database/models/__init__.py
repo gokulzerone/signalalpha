@@ -1,5 +1,6 @@
 """All ORM models. Import this module to register every table on ``Base.metadata``."""
 
+from database.models.backtest import BacktestRun, ScorePerformance, SignalPerformance
 from database.models.base import (
     Base,
     CompanyScopedMixin,
@@ -74,6 +75,7 @@ __all__ = [
     "Announcement",
     "AnnouncementCategory",
     "AuditOpinion",
+    "BacktestRun",
     "Base",
     "BulkDeal",
     "Company",
@@ -106,8 +108,10 @@ __all__ = [
     "RatingAction",
     "RawDocument",
     "Score",
+    "ScorePerformance",
     "Shareholding",
     "Signal",
+    "SignalPerformance",
     "Source",
     "SurveillanceEvent",
     "SurveillanceEventType",

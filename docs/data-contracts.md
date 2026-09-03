@@ -108,3 +108,29 @@ no survivorship bias.
   other scores times `1 - risk_penalty(Risk)`, and is zero when any of the four is zero or
   missing (a loss-making company with no valuation multiple therefore scores zero; this is
   the PRD's multiplicative form applied literally).
+
+## Backtesting (build step 6)
+
+* `backtesting/config.yaml`: horizons, benchmark index per dataset, execution model
+  (one-way base cost plus slippage `k / sqrt(ADV in ₹ crore)` clipped to a band, position cap
+  as a percentage of ADV, portfolio capital), terminal returns for delistings, minimum
+  sample size.
+* Entry is the first trading day's open after the event's `public_at` date; exit is the
+  close on the first trading day at or after entry plus the horizon. A window that ends
+  after the run's `as_of` is discarded (never truncated), so nothing after `as_of` leaks.
+* Returns are adjusted for bonuses and splits whose ex-date falls inside the window
+  (dividends are not added; documented simplification). A company compulsorily delisted
+  inside the window earns the configured terminal return (default −100%); a voluntary
+  delisting earns its last traded price.
+* Eligibility uses the versioned universe on the event date (listed, in the cap band) and
+  excludes illiquid names unless configured otherwise.
+* Benchmark return over a window is the equal-weight return of the index's constituents
+  as of the entry date (historical membership), each with the same execution convention.
+* Per group (signal type, or score type and decile) and horizon: n, hit rate, mean and
+  median excess, 95% CI, Spearman information coefficient (signals: magnitude vs excess),
+  and an equal-weight event portfolio (weights capped by the liquidity cap, rebalanced daily
+  across open positions) giving volatility, Sharpe, Sortino, max drawdown, turnover and
+  cost drag. `decay` holds the mean excess at every horizon. Rows with n below the minimum
+  sample are flagged `low_sample`.
+* Score deciles are recomputed at each rebalance date from data public at that date
+  (`compute_universe_inputs` + `score_universe`), never read from stored scores.
