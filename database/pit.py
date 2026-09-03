@@ -18,7 +18,7 @@ from datetime import date, datetime, time
 from typing import TypeVar
 from zoneinfo import ZoneInfo
 
-from sqlalchemy import Select, select, text
+from sqlalchemy import Select, func, select, text
 from sqlalchemy.orm import Session
 
 from database.models import (
@@ -40,6 +40,7 @@ from database.models import (
     ProvenanceMixin,
     PublicAtMixin,
     RawDocument,
+    Score,
     Shareholding,
     Signal,
     Source,
@@ -257,6 +258,38 @@ class PointInTimeSession:
             IndexConstituent,
         )
         return sorted({row.company_id for row in self.session.scalars(stmt).all()})
+
+    # ------------------------------------------------------------------- scores
+    def scores(self, company_id: int, on: date | None = None) -> Sequence[Score]:
+        """Scores computed for the latest scoring date on or before ``on`` (default as_of)."""
+        on = self._check_date(on)
+        latest = self.session.scalar(
+            select(func.max(Score.as_of)).where(
+                Score.company_id == company_id, Score.as_of <= on, Score.is_mock == self.is_mock
+            )
+        )
+        if latest is None:
+            return []
+        return self.session.scalars(
+            select(Score)
+            .where(
+                Score.company_id == company_id, Score.as_of == latest, Score.is_mock == self.is_mock
+            )
+            .order_by(Score.score_type)
+        ).all()
+
+    def universe_scores(self, score_type: str, on: date | None = None) -> Sequence[Score]:
+        on = self._check_date(on)
+        latest = self.session.scalar(
+            select(func.max(Score.as_of)).where(Score.as_of <= on, Score.is_mock == self.is_mock)
+        )
+        if latest is None:
+            return []
+        return self.session.scalars(
+            select(Score).where(
+                Score.as_of == latest, Score.score_type == score_type, Score.is_mock == self.is_mock
+            )
+        ).all()
 
     # ------------------------------------------------------------------ signals
     def signals(

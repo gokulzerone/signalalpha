@@ -19,4 +19,5 @@ Tests run against an embedded PostgreSQL 16 + pgvector (no Docker needed). Set
 2. Mock data generator — done (`python -m data.mock generate`, see `docs/mock-universe.md`)
 3. Evidence module — done (span validation in Python and in a DB trigger; viewer endpoint)
 4. Signals — done (30 catalogue types, point-in-time runner, proposal validator)
-5. Scores — pending
+5. Scores — done (five percentile scores + Opportunity, all components exposed)
+6. Backtesting — pending

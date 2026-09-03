@@ -1,0 +1,49 @@
+# Score configuration (PRD §9). Weights, windows, penalties and the Opportunity form live
+# here; the version is stored with every score row.
+version: "scores-v1"
+
+windows:
+  inflection_days: 180          # "last 2 quarters"
+  inflection_half_life_days: 90
+  forensic_flag_days: 365       # a forensic signal is an active flag for this long
+  negative_ownership_days: 365
+  key_person_exit_days: 365
+  price_lag_days: 120
+  volatility_trading_days: 90
+  turnover_trading_days: 90
+  reaction_window_trading_days: 5
+  reaction_min_move: 0.05
+  max_days_since_reaction: 730
+  own_history_years: 3
+
+inflection:
+  consistency_bonus: 0.25       # multiplier (1 + bonus) when >= 2 families carry positive signals
+  families: [financial, business]
+
+quality:
+  weights: {roce_3y: 0.35, cfo_to_ebitda_ttm: 0.30, receivable_days_trend: 0.15, promoter_pct: 0.20}
+  # multiplicative penalty per active forensic flag type (applied once per type)
+  forensic_penalties:
+    audit_qualification: 0.5
+    related_party_revenue: 0.7
+    receivables_outrunning_revenue: 0.7
+    cash_vs_debt_anomaly: 0.7
+    contingent_liability_spike: 0.85
+    frequent_fund_raise: 0.8
+
+valuation:
+  weights: {ev_ebitda_vs_sector: 0.30, pe_vs_sector: 0.25, ev_ebitda_vs_own_history: 0.20, pe_vs_own_history: 0.10, peg_trailing: 0.15}
+
+risk:
+  weights: {forensic_severity: 0.25, pledge_pct: 0.15, illiquidity: 0.15, surveillance: 0.10, negative_ownership: 0.10, audit_qualification: 0.10, key_person_exits: 0.05, volatility: 0.10}
+
+attention_gap:
+  weights: {institutional_absence: 0.30, low_turnover: 0.25, days_since_reaction: 0.15, filing_complexity: 0.10, price_lag: 0.20}
+
+opportunity:
+  # weighted geometric mean of the four scores (as fractions), times (1 - risk_penalty)
+  weights: {inflection: 1.0, quality: 1.0, valuation: 1.0, attention_gap: 1.0}
+  risk_penalty:            # piecewise-linear in the Risk score
+    start: 40              # no penalty at or below this Risk score
+    full: 100
+    max_penalty: 0.8

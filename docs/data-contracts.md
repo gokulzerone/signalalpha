@@ -91,3 +91,20 @@ no survivorship bias.
 * Agent-proposed signals go through `signals/validators.py`: a proposal is accepted only if a
   deterministic signal of that type already exists for the company (matched by `dedupe_key`
   or by `public_at` within a day). Nothing an agent says can create a signal.
+
+## Scores (build step 5)
+
+* `scoring/config.yaml` carries every weight, window, forensic penalty and the Opportunity
+  form; its `version` is stored on every score row.
+* `scoring/inputs.py` computes every raw metric in Python from point-in-time data (reusing
+  the signal `DetectionContext`), including each company's own 3-year monthly valuation
+  history using only data public at each month.
+* `scoring/scores.py` ranks metrics as cross-sectional percentiles within the companies
+  that are `in_universe` on the as-of date (listed and inside the cap band; illiquid names
+  are included and flagged). Missing components are dropped and weights renormalised, and
+  every `ScoreResult` exposes raw value, percentile, weight and contribution per component.
+* Quality is multiplied by a per-flag penalty for each active forensic signal (365-day
+  window). Risk is "higher = worse". Opportunity is the weighted geometric mean of the four
+  other scores times `1 - risk_penalty(Risk)`, and is zero when any of the four is zero or
+  missing (a loss-making company with no valuation multiple therefore scores zero; this is
+  the PRD's multiplicative form applied literally).

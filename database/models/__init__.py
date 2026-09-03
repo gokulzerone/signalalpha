@@ -45,6 +45,7 @@ from database.models.ownership import (
     TradeSide,
 )
 from database.models.quality import DataQuality
+from database.models.scores import Score
 from database.models.signals import Signal
 
 #: Every model that carries ``public_at`` and is therefore subject to point-in-time filtering.
@@ -104,6 +105,7 @@ __all__ = [
     "PublicAtMixin",
     "RatingAction",
     "RawDocument",
+    "Score",
     "Shareholding",
     "Signal",
     "Source",

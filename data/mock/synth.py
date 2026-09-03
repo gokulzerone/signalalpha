@@ -224,6 +224,9 @@ def draw_params(rng: random.Random, bp: Blueprint) -> Params:
     margin = rng.uniform(*r["margin"])
     price0 = rng.uniform(60, 900)
     target_mcap = rng.uniform(160, 2200)
+    if bp.story in POSITIVE_STORIES | NEGATIVE_STORIES:
+        # Story companies must stay inside the market-cap band through their planted moves.
+        target_mcap = min(target_mcap, 700.0)
     annual_rev = rev * 4
     p = Params(
         base_revenue_q=rev,
