@@ -3,15 +3,14 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
-from datetime import date, datetime, timedelta
-from decimal import Decimal
+from datetime import datetime, timedelta
 
 from sqlalchemy import func, select
 
 from apps.api.schemas import AgentOutputOut, CompanyRow, ScoreBrief
 from database.models import AgentRun, Company, DataQuality, RunStatus, Signal, UniverseSnapshot
 from database.pit import PointInTimeSession
-from signals.context import Period
+from scoring.ratios import ratios_for
 
 SCORE_TYPES = ("opportunity", "inflection", "quality", "valuation", "risk", "attention_gap")
 NEGATIVE_OWNERSHIP = {
@@ -150,50 +149,4 @@ def company_row(
     )
 
 
-def ratios_for(row: Period, quarters: Sequence[Period]) -> dict[str, float | None]:
-    """Python-computed ratios for one financial row (PRD §2.3)."""
-
-    def f(x: Decimal | None) -> float | None:
-        return None if x is None else float(x)
-
-    out: dict[str, float | None] = {}
-    if row.revenue and row.ebitda is not None:
-        out["ebitda_margin"] = float(row.ebitda / row.revenue)
-    if row.revenue and row.pat is not None:
-        out["pat_margin"] = float(row.pat / row.revenue)
-    prior = next(
-        (
-            q
-            for q in quarters
-            if q.months == row.months and q.period_end == _year_before(row.period_end)
-        ),
-        None,
-    )
-    if prior and prior.revenue and row.revenue is not None:
-        out["revenue_yoy"] = float((row.revenue - prior.revenue) / prior.revenue)
-    if prior and prior.ebitda and row.ebitda is not None and prior.ebitda > 0:
-        out["ebitda_yoy"] = float((row.ebitda - prior.ebitda) / prior.ebitda)
-    ttm = [q for q in quarters if q.months == 3 and q.period_end <= row.period_end][-4:]
-    ttm_rev = (
-        sum((q.revenue for q in ttm if q.revenue is not None), Decimal(0))
-        if len(ttm) == 4
-        else None
-    )
-    if ttm_rev and row.receivables is not None:
-        out["receivable_days"] = float(row.receivables / ttm_rev * 365)
-    if ttm_rev and row.inventory is not None:
-        out["inventory_days"] = float(row.inventory / ttm_rev * 365)
-    if row.total_borrowings is not None and row.cash is not None:
-        out["net_debt"] = f(row.total_borrowings - row.cash)
-    if row.cfo is not None and row.ebitda and row.ebitda > 0:
-        out["cfo_to_ebitda"] = float(row.cfo / row.ebitda)
-    if row.capex is not None and row.depreciation and row.depreciation > 0:
-        out["capex_to_depreciation"] = float(row.capex / row.depreciation)
-    return out
-
-
-def _year_before(d: date) -> date:
-    try:
-        return d.replace(year=d.year - 1)
-    except ValueError:
-        return d.replace(year=d.year - 1, day=28)
+__all__ = ["ratios_for"]

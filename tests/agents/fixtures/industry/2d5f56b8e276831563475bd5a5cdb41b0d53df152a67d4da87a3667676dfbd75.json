@@ -1,0 +1,70 @@
+{
+  "model_id": "template-v1",
+  "output": {
+    "claims": [
+      {
+        "quotes": [
+          {
+            "document_id": 1018,
+            "quote": "Revenue from operations for the year was Rs."
+          }
+        ],
+        "text": "The annual report reports the year's revenue."
+      },
+      {
+        "quotes": [
+          {
+            "document_id": 1021,
+            "quote": "Rationale: sustained improvement in operating margins and cash accruals, and reduction in debt."
+          }
+        ],
+        "text": "The rating agency's rationale describes the credit profile."
+      },
+      {
+        "quotes": [
+          {
+            "document_id": 1020,
+            "quote": "Rationale: established track record and moderate leverage."
+          }
+        ],
+        "text": "The rating agency's rationale describes the credit profile."
+      }
+    ],
+    "headwinds": [],
+    "peer_comparisons": [
+      {
+        "comment": "Peer MOCK-PNHR margin comparison.",
+        "company_id": 18,
+        "company_value": 0.16988126092459768,
+        "metric": "ebitda_margin",
+        "peer_value": 0.1228219879435162
+      },
+      {
+        "comment": "Peer MOCK-PLFG margin comparison.",
+        "company_id": 19,
+        "company_value": 0.16988126092459768,
+        "metric": "ebitda_margin",
+        "peer_value": 0.11008227583321713
+      },
+      {
+        "comment": "Peer MOCK-CVAX margin comparison.",
+        "company_id": 20,
+        "company_value": 0.16988126092459768,
+        "metric": "ebitda_margin",
+        "peer_value": 0.10178517568994118
+      }
+    ],
+    "position": {
+      "growth": "below",
+      "margin": "above",
+      "valuation": "above"
+    },
+    "sector_context": "The company operates in the Auto Ancillaries sector (Castings) with 3 listed peers in the database.",
+    "tailwinds": [
+      "Rating rationale: Rationale: sustained improvement in operating margins and cash accruals, and reduction in debt.",
+      "Rating rationale: Rationale: established track record and moderate leverage."
+    ]
+  },
+  "tokens_in": 1141,
+  "tokens_out": 376
+}

@@ -1,0 +1,9 @@
+{
+  "model_id": "template-v1",
+  "output": {
+    "flags": [],
+    "summary": "No forensic red flags were identified from the computed signals."
+  },
+  "tokens_in": 3236,
+  "tokens_out": 23
+}

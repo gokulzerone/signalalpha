@@ -1,0 +1,29 @@
+{
+  "model_id": "template-v1",
+  "output": {
+    "claims": [
+      {
+        "quotes": [
+          {
+            "document_id": 1019,
+            "quote": "Promoter and Promoter Group | 66.21"
+          }
+        ],
+        "text": "Promoter and promoter group held 66.21% of equity."
+      },
+      {
+        "quotes": [
+          {
+            "document_id": 1019,
+            "quote": "Shares pledged or otherwise encumbered by promoters: 0.00% of promoter holding"
+          }
+        ],
+        "text": "0.00% of the promoter holding was pledged."
+      }
+    ],
+    "narrative": "Promoter holding was 66.21% as on 2026-03-31, with 0.00% of the promoter holding pledged. Four quarters earlier the promoter holding was 66.20%.",
+    "promoter_behaviour": "stable"
+  },
+  "tokens_in": 756,
+  "tokens_out": 133
+}

@@ -22,4 +22,5 @@ Tests run against an embedded PostgreSQL 16 + pgvector (no Docker needed). Set
 5. Scores — done (five percentile scores + Opportunity, all components exposed)
 6. Backtesting — done (point-in-time simulator, execution model, signal and score-decile performance tables)
 7. API — done (all PRD §10 endpoints; research jobs inline or via Celery)
-8. Agents — pending
+8. Agents — done (eight agents with validators; Claude, recorded-fixture and offline template clients)
+9. UI — pending

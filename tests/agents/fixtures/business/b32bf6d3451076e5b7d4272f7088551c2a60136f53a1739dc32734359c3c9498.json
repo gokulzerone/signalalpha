@@ -1,0 +1,22 @@
+{
+  "model_id": "template-v1",
+  "output": {
+    "capacity_story": "No capacity expansion was announced in the period covered by the provided documents.",
+    "claims": [
+      {
+        "quotes": [
+          {
+            "document_id": 1018,
+            "quote": "Krishna Castings (Mock) Ltd (MOCK-KRCS)"
+          }
+        ],
+        "text": "The annual report describes the year's operations."
+      }
+    ],
+    "concentration": "Customer concentration is not quantified in the provided documents.",
+    "order_book_estimate_cr": 0,
+    "orders": []
+  },
+  "tokens_in": 979,
+  "tokens_out": 100
+}

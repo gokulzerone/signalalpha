@@ -29,6 +29,13 @@ AgentStage = Callable[
 AGENT_STAGE: AgentStage | None = None
 
 
+def ensure_agents_registered() -> None:
+    """Import the agent package so it plugs its stage into this pipeline."""
+    global AGENT_STAGE
+    if AGENT_STAGE is None:
+        import agents.pipeline  # noqa: F401  (registers AGENT_STAGE)
+
+
 def create_run(
     session: Session, company: Company, as_of: date, *, is_mock: bool, kind: str = "research"
 ) -> ResearchRun:
@@ -61,6 +68,7 @@ def execute_run(session: Session, run_id: str, *, agents: list[str] | None = Non
     assert company is not None
     run.status = RunStatus.RUNNING
     session.flush()
+    ensure_agents_registered()
     try:
         _step(
             run,

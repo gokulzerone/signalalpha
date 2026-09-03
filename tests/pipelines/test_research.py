@@ -16,7 +16,9 @@ def test_execute_run_records_steps_and_failures(mock_session: Session, mock_sign
     run = create_run(mock_session, company, date(2026, 8, 31), is_mock=True)
     done = execute_run(mock_session, run.id)
     assert done.status is RunStatus.COMPLETED and done.finished_at is not None
-    assert [s["status"] for s in done.steps] == ["skipped", "completed", "skipped", "completed"]
+    statuses = [s["status"] for s in done.steps]
+    assert statuses[:2] == ["skipped", "completed"] and statuses[-1] == "completed"
+    assert sum(1 for s in done.steps if str(s["name"]).startswith("agent:")) == 8
 
     bad = create_run(mock_session, company, date(1990, 1, 1), is_mock=True)
     bad.company_id = company.id

@@ -1,0 +1,51 @@
+{
+  "model_id": "template-v1",
+  "output": {
+    "claims": [
+      {
+        "quotes": [
+          {
+            "document_id": 1017,
+            "quote": "Revenue from operations | 86.67 | 83.19"
+          }
+        ],
+        "text": "Revenue from operations for the quarter was Rs. 86.67 crore."
+      },
+      {
+        "quotes": [
+          {
+            "document_id": 1017,
+            "quote": "EBITDA | 14.96 | 14.22"
+          }
+        ],
+        "text": "EBITDA for the quarter was Rs. 14.96 crore."
+      }
+    ],
+    "narrative": "Revenue from operations for the quarter ended 2026-03-31 was Rs. 86.67 crore and EBITDA was Rs. 14.96 crore. Revenue grew 4.18% year on year. The EBITDA margin was 17.26%.",
+    "proposed_signals": [
+      {
+        "dedupe_key": "2026-03-31",
+        "signal_type": "deleveraging"
+      },
+      {
+        "dedupe_key": "2025-12-31",
+        "signal_type": "operating_leverage"
+      },
+      {
+        "dedupe_key": "2025-09-30",
+        "signal_type": "operating_leverage"
+      },
+      {
+        "dedupe_key": "2025-06-30",
+        "signal_type": "margin_inflection"
+      },
+      {
+        "dedupe_key": "2025-06-30",
+        "signal_type": "operating_leverage"
+      }
+    ],
+    "trajectory": "stable"
+  },
+  "tokens_in": 8047,
+  "tokens_out": 215
+}

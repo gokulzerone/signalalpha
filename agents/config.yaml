@@ -1,0 +1,13 @@
+# Agent runtime configuration (PRD §7.1).
+version: "agents-v1"
+provider: template            # template | anthropic | recorded (overridden by SIGNALALPHA_LLM_PROVIDER)
+model_id: claude-opus-5       # used by the anthropic provider
+max_tokens: 16000
+daily_budget_usd_per_company: 5.0
+document_char_limit: 12000    # per document passed to an agent
+pricing_usd_per_million:      # input, output
+  claude-opus-5: [5.0, 25.0]
+  claude-sonnet-5: [2.0, 10.0]
+  template-v1: [0.0, 0.0]
+  recorded: [0.0, 0.0]
+numeric_tolerance: 0.005      # narrative figures must match structured values within 0.5%

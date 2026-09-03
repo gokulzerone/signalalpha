@@ -100,17 +100,22 @@ def default_assumptions(inputs: ScenarioInputs, config: ScoreConfig) -> list[Sce
         if inputs.current_ev_ebitda and inputs.current_ev_ebitda > 0
         else 8.0
     )
+
+    def clamp(name: str, value: float) -> float:
+        lo, hi = cfg.bounds[name]
+        return min(hi, max(lo, value))
+
     out: list[ScenarioAssumptions] = []
     for name in ("bear", "base", "bull"):
         d: Any = getattr(cfg, name)
         out.append(
             ScenarioAssumptions(
                 name=name,
-                revenue_growth=round(growth + d.growth_delta, 4),
-                ebitda_margin=round(margin + d.margin_delta, 4),
-                exit_ev_ebitda=round(multiple * (1 + d.multiple_pct), 2),
+                revenue_growth=round(clamp("revenue_growth", growth + d.growth_delta), 4),
+                ebitda_margin=round(clamp("ebitda_margin", margin + d.margin_delta), 4),
+                exit_ev_ebitda=round(clamp("exit_ev_ebitda", multiple * (1 + d.multiple_pct)), 2),
                 horizon_years=cfg.horizon_years,
-                rationale="Default around trailing values (no validated Valuation agent run).",
+                rationale="Default around trailing values, clamped to configured sanity bounds.",
             )
         )
     return out

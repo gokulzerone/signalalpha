@@ -38,7 +38,33 @@ def test_research_job_runs_signals_and_scores(
     steps = done["steps"]
     assert isinstance(steps, list)
     names = [s["name"] for s in steps]
-    assert names == ["refresh", "signals", "agents", "scores"]
+    assert names[:2] == ["refresh", "signals"] and names[-1] == "scores"
+    agent_order = (
+        "financial",
+        "promoter",
+        "business",
+        "industry",
+        "forensic",
+        "valuation",
+        "contradiction",
+        "thesis",
+    )
+    assert [n for n in names if n.startswith("agent:")] == [f"agent:{a}" for a in agent_order]
+    agent_steps = [s for s in steps if str(s["name"]).startswith("agent:")]
+    assert all(s["status"] == "completed" for s in agent_steps), agent_steps
+    # The thesis is now served together with its contradiction and evidence (PRD §2.6, §8).
+    t = client.get(f"/api/v1/companies/{cid}/thesis", params={"as_of": "2026-08-31"}).json()["data"]
+    assert t["thesis"] and t["contradiction"] and t["message"] is None
+    assert t["thesis"]["output"]["contradiction_run_id"] == t["contradiction"]["agent_run_id"]
+    assert t["evidence"]
+    assert all(e["document_url"].endswith(f"?highlight={e['id']}") for e in t["evidence"])
+    v = client.get(f"/api/v1/companies/{cid}/valuation", params={"as_of": "2026-08-31"}).json()[
+        "data"
+    ]
+    assert v["source"] == "agent" and v["agent_run_id"]
+    listing = client.get("/api/v1/companies", params={"as_of": "2026-08-31", "page_size": 200})
+    row = next(i for i in listing.json()["data"]["items"] if i["id"] == cid)
+    assert row["key_change"]
 
 
 def test_agent_job_validates_name(client: TestClient, mock_session: Session) -> None:

@@ -156,3 +156,29 @@ no survivorship bias.
   the stack works with no network.
 * The API never uses the words "buy", "sell", "target price" or "recommendation" (PRD §16);
   a test asserts this on the valuation payload.
+
+## Agents (build step 8)
+
+* `agents/llm.py` is the provider layer: `AnthropicClient` (Claude API, structured output
+  via `messages.parse`), `RecordedClient` (replays fixtures keyed by the input hash for CI)
+  and `TemplateClient`, a deterministic stand-in labelled `template-v1` that writes
+  schema-valid output from the structured snapshot. The template client is not an LLM; it
+  exists so the whole pipeline runs and is tested with no network, and so mock company pages
+  carry theses whose every claim links to a verified span. Select with
+  `SIGNALALPHA_LLM_PROVIDER=anthropic|recorded|template` (`agents/config.yaml` default).
+* Agents never create evidence text. Their claims carry `(document_id, quote)` pairs for
+  documents they were given; Python locates each quote and creates the evidence record
+  (`created_by = agent:<name>`), then `validate_claims` checks company and time.
+* Every narrative figure must match a structured input value (or a number inside one of the
+  claim's verified quotes) within `numeric_tolerance`; downstream agents may also reuse
+  figures already present in validated upstream outputs.
+* Validators per PRD §7: Financial (proposed signals must match computed ones), Promoter
+  (classification consistent with ownership signals and pledge level), Business (each order
+  value is a verbatim span, Python sums the order book), Industry (peer ids must exist),
+  Forensic (flags map to computed forensic signals or are `unclassified`), Valuation
+  (parameters only, within bounds; Python computes scenarios), Contradiction (must cite a
+  negative signal when one exists), Thesis (needs a validated Contradiction for the same
+  as-of and must restate one of its disputes).
+* Runs are cached on `(company, agent, as_of, prompt_version, input_hash, model_id)`;
+  tokens and cost are stored per run and a per-company daily budget stops runaway loops.
+  Prompts are versioned files in `agents/prompts/`.
