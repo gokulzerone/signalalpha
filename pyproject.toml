@@ -19,6 +19,7 @@ dependencies = [
     "httpx>=0.27",
     "anthropic>=0.40",
     "pypdf>=5.0",
+    "defusedxml>=0.7",
 ]
 
 [project.optional-dependencies]
@@ -55,7 +56,7 @@ files = ["apps", "database", "data", "pipelines", "signals", "agents", "scoring"
 exclude = ["database/migrations/versions"]
 
 [[tool.mypy.overrides]]
-module = ["pgserver", "pgserver.*", "celery", "celery.*", "kombu", "kombu.*", "pgvector.*"]
+module = ["pgserver", "pgserver.*", "celery", "celery.*", "kombu", "kombu.*", "pgvector.*", "defusedxml.*"]
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
@@ -76,3 +77,12 @@ source = ["scoring", "signals", "evidence", "backtesting", "database"]
 "data/mock/generator.py" = ["E501"]
 # Agent modules carry long template prose and mechanism descriptions.
 "agents/*.py" = ["E501"]
+# Live ingestion modules carry long URL templates and wide row literals.
+"data/live.py" = ["E501"]
+"data/fetchers/*.py" = ["E501"]
+"scripts/*.py" = ["E501"]
+# Narration renders one sentence per signal type; the tables read better unwrapped.
+"decisions/narrate.py" = ["E501"]
+# Readiness checks read better as one line per check.
+"decisions/readiness.py" = ["E501"]
+"apps/api/routers/desk.py" = ["E501"]

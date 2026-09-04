@@ -17,7 +17,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <header className="flex items-center gap-6 px-4 py-2 border-b border-ink-600 bg-ink-800 sticky top-0 z-10">
           <Link href="/" className="text-slate-100 font-semibold no-underline">SignalAlpha</Link>
           <nav className="flex gap-4">
-            <Link href="/">Dashboard <span className="kbd">g d</span></Link>
+            <Link href="/">Desk <span className="kbd">g d</span></Link>
+            <Link href="/journal">Journal <span className="kbd">g j</span></Link>
+            <Link href="/screener">Screener <span className="kbd">g c</span></Link>
             <Link href="/signals">Signals <span className="kbd">g s</span></Link>
             <Link href="/data">Data <span className="kbd">g q</span></Link>
           </nav>

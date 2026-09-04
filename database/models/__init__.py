@@ -18,6 +18,7 @@ from database.models.company import (
     ListingStatus,
     UniverseSnapshot,
 )
+from database.models.decisions import Conviction, Decision, Verdict
 from database.models.documents import DocumentText, Filing, FilingType, RawDocument
 from database.models.events import (
     Announcement,
@@ -82,11 +83,13 @@ __all__ = [
     "BulkDeal",
     "Company",
     "CompanyScopedMixin",
+    "Conviction",
     "CorporateAction",
     "CorporateActionType",
     "CreditRating",
     "DataQuality",
     "DealType",
+    "Decision",
     "DelistingKind",
     "DocumentText",
     "Evidence",
@@ -123,4 +126,5 @@ __all__ = [
     "TradeMode",
     "TradeSide",
     "UniverseSnapshot",
+    "Verdict",
 ]

@@ -18,7 +18,20 @@ class IngestionFlags(BaseSettings):
 
     live_eod_prices: bool = False
     live_nse_announcements: bool = False
+    live_financial_results: bool = False
+    live_corporate_actions: bool = False
     contact: str = "unset"
+
+    @property
+    def any_live(self) -> bool:
+        return any(
+            (
+                self.live_eod_prices,
+                self.live_nse_announcements,
+                self.live_financial_results,
+                self.live_corporate_actions,
+            )
+        )
 
 
 class EodPricesSource(BaseModel):
@@ -33,6 +46,19 @@ class AnnouncementsSource(BaseModel):
     warmup_url: str
     parser_version: str
     attachment_parser_version: str
+    window_days: int = 30
+
+
+class ResultsSource(BaseModel):
+    url_template: str
+    warmup_url: str
+    parser_version: str
+
+
+class SimpleSource(BaseModel):
+    url_template: str
+    warmup_url: str | None = None
+    parser_version: str
 
 
 class SourceRegistry(BaseModel):
@@ -40,8 +66,12 @@ class SourceRegistry(BaseModel):
     rate_limit_per_minute: int
     request_timeout_seconds: int
     respect_robots: bool
+    warmup_url: str = "https://www.nseindia.com/"
     eod_prices: EodPricesSource
     nse_announcements: AnnouncementsSource
+    financial_results: ResultsSource
+    corporate_actions: SimpleSource
+    equity_list: SimpleSource
 
 
 class LiveCompany(BaseModel):

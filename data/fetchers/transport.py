@@ -86,12 +86,19 @@ class HttpTransport:
         rp = self._robots[origin]
         return True if rp is None else rp.can_fetch(self.user_agent, url)
 
+    def get_with_headers(self, url: str, headers: dict[str, str]) -> Fetched:
+        """Like :meth:`get` but sends extra request headers (Referer, Accept)."""
+        return self._request(url, headers)
+
     def get(self, url: str) -> Fetched:
+        return self._request(url, {})
+
+    def _request(self, url: str, headers: dict[str, str]) -> Fetched:
         if not self.allowed(url):
             raise FetchError(url, "disallowed by robots.txt")
         self.limiter.wait()
         try:
-            resp = self._client.get(url)
+            resp = self._client.get(url, headers=headers)
         except httpx.HTTPError as exc:
             raise FetchError(url, f"network error: {exc}") from exc
         if resp.status_code != 200:

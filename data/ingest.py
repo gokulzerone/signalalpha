@@ -92,7 +92,7 @@ def _quality(session: Session, company_id: int | None, source: Source) -> DataQu
     return row
 
 
-def _record_failure(
+def record_failure(
     session: Session, company_id: int | None, source: Source, kind: str, error: str
 ) -> None:
     q = _quality(session, company_id, source)
@@ -105,7 +105,7 @@ def _record_failure(
     session.flush()
 
 
-def _record_success(
+def record_success(
     session: Session, company_id: int | None, source: Source, latest_public_at: datetime | None
 ) -> None:
     q = _quality(session, company_id, source)
@@ -141,7 +141,7 @@ def ingest_eod_prices(
     try:
         fetched = transport.get(url)
     except FetchError as exc:
-        _record_failure(session, None, Source.EOD_PRICES, "fetch", str(exc))
+        record_failure(session, None, Source.EOD_PRICES, "fetch", str(exc))
         raise
     report.fetched = 1
     text = fetched.content.decode("utf-8", errors="replace")
@@ -161,7 +161,7 @@ def ingest_eod_prices(
     try:
         records = nse_prices.parse_sec_bhavdata(text, tuple(src.series))
     except nse_prices.ParseError as exc:
-        _record_failure(session, None, Source.EOD_PRICES, "parse", str(exc))
+        record_failure(session, None, Source.EOD_PRICES, "parse", str(exc))
         raise
     companies = (
         companies
@@ -203,8 +203,8 @@ def ingest_eod_prices(
             )
         )
         report.rows += 1
-        _record_success(session, company.id, Source.EOD_PRICES, public_at)
-    _record_success(session, None, Source.EOD_PRICES, public_at)
+        record_success(session, company.id, Source.EOD_PRICES, public_at)
+    record_success(session, None, Source.EOD_PRICES, public_at)
     session.flush()
     return report
 
@@ -238,7 +238,7 @@ def ingest_announcements(
     try:
         fetched = transport.get(url)
     except FetchError as exc:
-        _record_failure(session, company.id, Source.NSE_ANNOUNCEMENTS, "fetch", str(exc))
+        record_failure(session, company.id, Source.NSE_ANNOUNCEMENTS, "fetch", str(exc))
         raise
     report.fetched = 1
     try:
@@ -246,7 +246,7 @@ def ingest_announcements(
             fetched.content.decode("utf-8", errors="replace")
         )
     except nse_announcements.ParseError as exc:
-        _record_failure(session, company.id, Source.NSE_ANNOUNCEMENTS, "parse", str(exc))
+        record_failure(session, company.id, Source.NSE_ANNOUNCEMENTS, "parse", str(exc))
         raise
     writer = DocumentWriter(session, store, is_mock=False)
     latest: datetime | None = None
@@ -272,7 +272,7 @@ def ingest_announcements(
                     text = f"{text}\n\f{body}"
                 except pdf_text.NoTextLayerError as exc:
                     attachment_failed = True
-                    _record_failure(
+                    record_failure(
                         session,
                         company.id,
                         Source.NSE_ANNOUNCEMENTS,
@@ -281,7 +281,7 @@ def ingest_announcements(
                     )
             except FetchError as exc:
                 attachment_failed = True
-                _record_failure(session, company.id, Source.NSE_ANNOUNCEMENTS, "fetch", str(exc))
+                record_failure(session, company.id, Source.NSE_ANNOUNCEMENTS, "fetch", str(exc))
         doc = writer.write_text_document(
             company=company,
             source=Source.NSE_ANNOUNCEMENTS,
@@ -309,7 +309,7 @@ def ingest_announcements(
         )
         report.rows += 1
         latest = rec.disseminated_at if latest is None or rec.disseminated_at > latest else latest
-    _record_success(session, company.id, Source.NSE_ANNOUNCEMENTS, latest)
+    record_success(session, company.id, Source.NSE_ANNOUNCEMENTS, latest)
     session.flush()
     return report
 

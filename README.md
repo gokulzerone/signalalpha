@@ -33,4 +33,12 @@ Tests run against an embedded PostgreSQL 16 + pgvector (no Docker needed). Set
 7. API — done (all PRD §10 endpoints; research jobs inline or via Celery)
 8. Agents — done (eight agents with validators; Claude, recorded-fixture and offline template clients)
 9. UI — done (dashboard, company page, signals, data; see `docs/ui.md`)
-10. Live ingestion — done (NSE EOD prices and announcements behind feature flags; see `docs/SOURCES.md`)
+10. Live ingestion — done (real NSE prices, results XBRL and announcements behind feature flags; see `docs/SOURCES.md`)
+
+## Beyond the PRD
+
+- **Decision layer** (`docs/decisions.md`): a desk, a ten-step brief, recorded decisions with
+  review triggers, and a journal with alerts. Research attention only, never trade instructions.
+- **Real data**: `scripts/sync_live.py` loads the NSE universe, daily prices, quarterly XBRL
+  results and announcements. Prices and announcements are current; the exchange's results API
+  lags, and the product says so rather than hiding it.

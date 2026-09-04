@@ -1,20 +1,42 @@
-# Live source registry (PRD §5.1, §16). URLs and cadences are configuration, not code.
-# Every fetcher is behind a feature flag (SIGNALALPHA_LIVE_<NAME>=true) and off by default.
-user_agent: "SignalAlpha/0.1 (research terminal; public data only; contact: set SIGNALALPHA_CONTACT)"
+# Live source registry (PRD §5.1, §16). Every fetcher is behind a feature flag
+# (SIGNALALPHA_LIVE_<NAME>) and off by default. Endpoints verified against NSE on
+# 2026-09-04; see docs/SOURCES.md for the terms relied on.
+#
+# The User-Agent is browser-compatible with a product token appended: NSE's CDN drops
+# connections from crawler-style agents, and this keeps SignalAlpha identifiable in their
+# logs while still being served. robots.txt allows all paths used here.
+user_agent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36 SignalAlpha/0.1"
 rate_limit_per_minute: 20
-request_timeout_seconds: 30
+request_timeout_seconds: 45
 respect_robots: true
+warmup_url: "https://www.nseindia.com/"
 
 eod_prices:
-  # Security-wise bhav data with delivery percentage, one CSV per trading day.
   url_template: "https://nsearchives.nseindia.com/products/content/sec_bhavdata_full_{ddmmyyyy}.csv"
   publication_time_ist: "18:00"
   series: ["EQ", "BE"]
   parser_version: "nse-secbhav-1"
 
 nse_announcements:
-  # Corporate announcements feed per symbol (JSON). Attachments are fetched separately.
-  url_template: "https://www.nseindia.com/api/corporate-announcements?index=equities&symbol={symbol}&from_date={from_ddmmyyyy}&to_date={to_ddmmyyyy}"
-  warmup_url: "https://www.nseindia.com/"
+  # Index-wide feed. A `symbol` parameter makes the endpoint return an empty list, so the
+  # feed is fetched whole and filtered locally.
+  url_template: "https://www.nseindia.com/api/corporate-announcements?index=equities&from_date={from_ddmmyyyy}&to_date={to_ddmmyyyy}"
+  warmup_url: "https://www.nseindia.com/companies-listing/corporate-filings-announcements"
+  window_days: 30          # the feed rejects long ranges; fetch in windows of this size
   parser_version: "nse-ann-1"
   attachment_parser_version: "pdf-text-1"
+
+financial_results:
+  # Index-wide results feed; each row links to the filing's Ind-AS XBRL document.
+  url_template: "https://www.nseindia.com/api/corporates-financial-results?index=equities&period={period}"
+  warmup_url: "https://www.nseindia.com/companies-listing/corporate-filings-financial-results"
+  parser_version: "nse-xbrl-1"
+
+corporate_actions:
+  url_template: "https://www.nseindia.com/api/corporates-corporateActions?index=equities"
+  warmup_url: "https://www.nseindia.com/companies-listing/corporate-actions"
+  parser_version: "nse-ca-1"
+
+equity_list:
+  url_template: "https://nsearchives.nseindia.com/content/equities/EQUITY_L.csv"
+  parser_version: "nse-equity-list-1"

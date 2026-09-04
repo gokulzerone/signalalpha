@@ -14,6 +14,8 @@ export function KeyboardNav() {
       if (pendingG) {
         pendingG = false;
         if (e.key === "d") router.push(`/${keep}`);
+        if (e.key === "j") router.push(`/journal${keep}`);
+        if (e.key === "c") router.push(`/screener${keep}`);
         if (e.key === "s") router.push(`/signals${keep}`);
         if (e.key === "q") router.push(`/data${keep}`);
         return;

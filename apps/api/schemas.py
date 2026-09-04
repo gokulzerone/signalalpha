@@ -3,10 +3,10 @@ a data-quality summary (PRD §10)."""
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import date, datetime
 from decimal import Decimal
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class SourceQuality(BaseModel):
@@ -268,3 +268,103 @@ class DataQualityRow(BaseModel):
     fetch_failure_count: int
     parse_failure_count: int
     last_error: str | None
+
+
+# ------------------------------------------------------------------- the desk
+class ReadinessCheckOut(BaseModel):
+    key: str
+    label: str
+    passed: bool
+    detail: str
+    to_resolve: str
+    critical: bool
+
+
+class ReadinessOut(BaseModel):
+    status: str
+    headline: str
+    checks: list[ReadinessCheckOut]
+
+
+class DecisionOut(BaseModel):
+    id: int
+    company_id: int
+    ticker: str
+    name: str
+    as_of: datetime
+    verdict: str
+    conviction: str | None
+    reason: str
+    review_trigger: str | None
+    review_by: datetime | None
+    created_at: datetime
+    snapshot: dict[str, object]
+
+
+class DecisionIn(BaseModel):
+    verdict: str = Field(pattern="^(shortlist|track|needs_evidence|pass)$")
+    reason: str = Field(min_length=3, max_length=2000)
+    conviction: str | None = Field(default=None, pattern="^(low|medium|high)$")
+    review_trigger: str | None = Field(default=None, max_length=500)
+    review_by: date | None = None
+    as_of: date | None = None
+
+
+class DeskRow(BaseModel):
+    company_id: int
+    ticker: str
+    name: str
+    sector: str
+    market_cap_cr: float | None
+    change: str
+    """One plain sentence: what changed, in the detector's own numbers."""
+    change_at: datetime | None
+    for_case: str
+    against_case: str
+    readiness: ReadinessOut
+    scores: ScoreBrief
+    base_rate: dict[str, object] | None
+    signal_types: list[str]
+    decision: DecisionOut | None
+
+
+class BaseRateOut(BaseModel):
+    signal_type: str
+    horizon_days: int
+    n: int
+    low_sample: bool
+    hit_rate: float | None
+    mean_excess: float | None
+    median_excess: float | None
+    ci_low: float | None
+    ci_high: float | None
+
+
+class BreakCondition(BaseModel):
+    text: str
+    source: str
+
+
+class BriefOut(BaseModel):
+    company: CompanyProfile
+    change: str
+    change_at: datetime | None
+    narrated_signals: list[dict[str, object]]
+    readiness: ReadinessOut
+    scores: list[ScoreOut]
+    base_rates: list[BaseRateOut]
+    liquidity: dict[str, object]
+    valuation: ValuationOut | None
+    thesis: ThesisOut
+    forensic_flags: list[dict[str, object]]
+    break_conditions: list[BreakCondition]
+    evidence: list[EvidenceOut]
+    decisions: list[DecisionOut]
+    suggested_review_by: datetime
+
+
+class AlertOut(BaseModel):
+    decision: DecisionOut
+    kind: str
+    text: str
+    at: datetime

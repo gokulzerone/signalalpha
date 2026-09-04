@@ -81,11 +81,15 @@ def _parse_time(value: str) -> datetime:
     raise ParseError(f"bad timestamp {value!r}")
 
 
-def parse_announcements(text: str) -> list[AnnouncementRecord]:
-    try:
-        raw: Any = json.loads(text)
-    except json.JSONDecodeError as exc:
-        raise ParseError("feed is not JSON; the endpoint may have changed") from exc
+def parse_announcements(payload: str | list[dict[str, Any]]) -> list[AnnouncementRecord]:
+    """Parse the feed from raw JSON text or from already-decoded items."""
+    if isinstance(payload, str):
+        try:
+            raw: Any = json.loads(payload)
+        except json.JSONDecodeError as exc:
+            raise ParseError("feed is not JSON; the endpoint may have changed") from exc
+    else:
+        raw = payload
     items = raw if isinstance(raw, list) else raw.get("data", []) if isinstance(raw, dict) else None
     if items is None:
         raise ParseError("unexpected feed shape")

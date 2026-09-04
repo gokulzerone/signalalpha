@@ -130,3 +130,38 @@ export async function apiOrNull<T>(path: string, params: Record<string, string |
     return null;
   }
 }
+
+// ------------------------------------------------------------------ the desk
+export type ReadinessCheck = { key: string; label: string; passed: boolean; detail: string; to_resolve: string; critical: boolean };
+export type Readiness = { status: "ready" | "partial" | "not_ready"; headline: string; checks: ReadinessCheck[] };
+export type Decision = {
+  id: number; company_id: number; ticker: string; name: string; as_of: string; verdict: string;
+  conviction: string | null; reason: string; review_trigger: string | null; review_by: string | null;
+  created_at: string; snapshot: Record<string, unknown>;
+};
+export type DeskRow = {
+  company_id: number; ticker: string; name: string; sector: string; market_cap_cr: number | null;
+  change: string; change_at: string | null; for_case: string; against_case: string;
+  readiness: Readiness; scores: ScoreBrief; base_rate: Record<string, unknown> | null;
+  signal_types: string[]; decision: Decision | null;
+};
+export type BaseRate = {
+  signal_type: string; horizon_days: number; n: number; low_sample: boolean;
+  hit_rate: number | null; mean_excess: number | null; median_excess: number | null; ci_low: number | null; ci_high: number | null;
+};
+export type NarratedSignal = {
+  signal_id: number; signal_type: string; family: string; direction: number; magnitude: number;
+  public_at: string; sentence: string; evidence_ids: number[];
+};
+export type Liquidity = {
+  adv_inr: number | null; participation_pct: number; comfortable_position_inr: number | null;
+  days_to_exit: Record<string, number>; round_trip_cost_pct: number | null; illiquid: boolean;
+};
+export type Brief = {
+  company: CompanyProfile; change: string; change_at: string | null; narrated_signals: NarratedSignal[];
+  readiness: Readiness; scores: ScoreOut[]; base_rates: BaseRate[]; liquidity: Liquidity;
+  valuation: Valuation | null; thesis: Thesis; forensic_flags: { signal_type: string; severity: string; mechanism: string; claims: Claim[] }[];
+  break_conditions: { text: string; source: string }[]; evidence: Evidence[]; decisions: Decision[];
+  suggested_review_by: string;
+};
+export type Alert = { decision: Decision; kind: string; text: string; at: string };
