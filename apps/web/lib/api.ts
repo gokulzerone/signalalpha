@@ -180,3 +180,35 @@ export type Brief = {
   suggested_review_by: string;
 };
 export type Alert = { decision: Decision; kind: string; text: string; at: string };
+
+// ---------------------------------------------------------------- investigate
+export type InvestigationStage = {
+  key: string; label: string; status: "pending" | "running" | "done" | "skipped" | "failed";
+  detail?: string | null; sources?: { title: string; url: string }[] | null;
+  findings?: { condition: string; so_what: string; sectors: string[] }[] | null;
+  shortlist?: { company_id: number; ticker: string; name: string; sector: string; opportunity: number | null }[] | null;
+  company?: { company_id: number; ticker: string; name: string; sector: string; opportunity: number | null } | null;
+  numbers?: Record<string, number | string | null> | null;
+  quarters?: { period_end: string; revenue_cr: number | null; ebitda_cr: number | null; ebitda_margin: number | null; revenue_yoy: number | null; document_id: number }[] | null;
+  positives?: string[] | null; negatives?: string[] | null; forensic_flags?: string[] | null; gaps?: string[] | null;
+  sectors_wanted?: string[] | null;
+};
+export type InvestigationResult = {
+  company: { company_id: number; ticker: string; name: string; sector: string };
+  why_this_one: string; macro_line: string | null; verdict: VerdictOut;
+  value: Record<string, number | string | null>;
+  fundamentals: { quarters: unknown[]; positives: string[]; margin_trend: string | null };
+  threats: { negatives: string[]; forensic_flags: string[]; gaps: string[]; days_to_exit_10L: number | null; illiquid: boolean };
+  scores: Record<string, number | null>;
+  web_grounded: boolean;
+};
+export type Investigation = {
+  id: string; status: "queued" | "running" | "completed" | "failed"; as_of: string;
+  stages: InvestigationStage[]; result: InvestigationResult | null; company_id: number | null;
+  error: string | null; created_at: string; finished_at: string | null;
+};
+export type Capabilities = {
+  web_research: boolean; how_to_enable: string;
+  stages: { key: string; running: string; done: string; needs_web: boolean }[];
+  suggested_as_of: string | null; covered_companies: number;
+};

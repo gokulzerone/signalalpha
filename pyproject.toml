@@ -87,4 +87,6 @@ source = ["scoring", "signals", "evidence", "backtesting", "database"]
 "decisions/readiness.py" = ["E501"]
 # Verdict wording reads better as one sentence per line.
 "decisions/verdict.py" = ["E501"]
+# Stage wording and macro prompts read better unwrapped.
+"investigations/*.py" = ["E501"]
 "apps/api/routers/desk.py" = ["E501"]

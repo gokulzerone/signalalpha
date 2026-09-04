@@ -37,6 +37,9 @@ Tests run against an embedded PostgreSQL 16 + pgvector (no Docker needed). Set
 
 ## Beyond the PRD
 
+- **Investigate** (`docs/investigate.md`): a top-down run from world economic conditions
+  down to one listed Indian company, with the web narrowing where to look and the filings
+  deciding what is said.
 - **Decision layer** (`docs/decisions.md`): a desk, a ten-step brief, recorded decisions with
   review triggers, and a journal with alerts. Research attention only, never trade instructions.
 - **Real data**: `scripts/sync_live.py` loads the NSE universe, daily prices, quarterly XBRL

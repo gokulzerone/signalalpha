@@ -64,7 +64,7 @@ export default async function CompanyPage({
     <div className="grid gap-12">
       <header className="grid gap-6">
         <Link href={`/${q}`} className="text-[13px] text-ink-2">
-          ← Candidates
+          ← List
         </Link>
         <div className="flex flex-wrap items-end justify-between gap-6">
           <div className="grid gap-1">

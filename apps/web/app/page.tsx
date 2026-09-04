@@ -31,7 +31,7 @@ export default async function Candidates({ searchParams }: { searchParams: Promi
     <div className="grid gap-8">
       <header className="grid gap-3">
         <div className="flex flex-wrap items-baseline gap-x-6 gap-y-2">
-          <h1 className="text-[28px]">Candidates</h1>
+          <h1 className="text-[28px]">List</h1>
           <p className="text-[13px] text-ink-3 m-0">
             {rows.length} of {coverage.covered_companies} covered companies changed in the last {since} days · as of{" "}
             <span className="num">{desk.as_of.slice(0, 10)}</span>

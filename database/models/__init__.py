@@ -33,6 +33,7 @@ from database.models.events import (
 )
 from database.models.evidence import AGENT_CREATOR_PREFIX, PARSER_CREATOR, Evidence
 from database.models.financials import AuditOpinion, Financial
+from database.models.investigations import Investigation, InvestigationStatus
 from database.models.market import IndexConstituent, Price
 from database.models.ownership import (
     BulkDeal,
@@ -102,6 +103,8 @@ __all__ = [
     "IndexConstituent",
     "InsiderTrade",
     "InstitutionalHolding",
+    "Investigation",
+    "InvestigationStatus",
     "ListingStatus",
     "MockFlagMixin",
     "PersonCategory",

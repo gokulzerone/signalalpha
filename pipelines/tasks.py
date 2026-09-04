@@ -15,6 +15,14 @@ def research_task(run_id: str, agents: list[str] | None = None) -> str:
         return run.status.value
 
 
+@celery_app.task(name="investigate.run", queue="agents")
+def investigation_task(investigation_id: str) -> str:
+    from investigations.runner import run_investigation
+
+    with session_scope() as session:
+        return run_investigation(session, investigation_id).status.value
+
+
 @celery_app.task(name="ingest.eod_prices", queue="ingest")
 def eod_prices_task(trade_date: str | None = None) -> dict[str, int]:
     """Daily EOD prices for the live universe (feature-flagged)."""

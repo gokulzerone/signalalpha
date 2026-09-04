@@ -9,12 +9,10 @@ export const metadata: Metadata = {
   description: "Fundamental changes at Indian small caps, from exchange filings only.",
 };
 
+// Two places to be: the ranked list, and a run that works from the world inwards.
 const NAV = [
-  ["/", "Candidates"],
-  ["/journal", "Journal"],
-  ["/screener", "Universe"],
-  ["/signals", "Evidence"],
-  ["/data", "Sources"],
+  ["/", "List"],
+  ["/investigate", "Investigate"],
 ];
 
 // The chrome defers to the content: one hairline, one row, no colour.
