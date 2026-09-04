@@ -28,14 +28,14 @@ export default async function BriefPage({ params, searchParams }: { params: Prom
     </div>
   );
   // A quoted span links to the highlighted passage; a table-derived figure links to the filing.
-  const sourceLinks = (s: { evidence_ids: number[]; document_ids: number[] }) => {
+  const sourceLinks = (s: { evidence_ids: number[]; document_ids?: number[] }) => {
     if (s.evidence_ids.length) {
       return s.evidence_ids.map((eid) => {
         const e = evidence.get(eid);
         return <Link key={eid} className="ev" href={`/companies/${cid}/documents/${e?.raw_document_id ?? 0}?highlight=${eid}${as_of ? `&as_of=${as_of}` : ""}`} title={e?.extracted_text ?? ""}>read the passage</Link>;
       });
     }
-    return s.document_ids.slice(0, 1).map((did) => (
+    return (s.document_ids ?? []).slice(0, 1).map((did) => (
       <Link key={did} className="ev" href={`/companies/${cid}/documents/${did}${q}`}>open the filing</Link>
     ));
   };

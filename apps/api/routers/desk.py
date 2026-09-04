@@ -164,8 +164,12 @@ def desk(
             continue
         strongest = max(signals, key=lambda s: (s.direction > 0, float(s.magnitude)))
         others = [s for s in signals if s.id != strongest.id]
-        positives = sorted((s for s in others if s.direction > 0), key=lambda s: -float(s.magnitude))
-        negatives = sorted((s for s in signals if s.direction < 0), key=lambda s: -float(s.magnitude))
+        positives = sorted(
+            (s for s in others if s.direction > 0), key=lambda s: -float(s.magnitude)
+        )
+        negatives = sorted(
+            (s for s in signals if s.direction < 0), key=lambda s: -float(s.magnitude)
+        )
         readiness, _flags, _period = _readiness_for(
             pit, company, signals, rates, failures.get(company.id, 0)
         )
@@ -227,19 +231,32 @@ def brief(
     failures = q.failures_map(pit).get(company_id, 0)
     readiness, flags, latest_period = _readiness_for(pit, company, signals, rates, failures)
 
-    narrated = [
-        {
-            "signal_id": s.id,
-            "signal_type": s.signal_type,
-            "family": s.family,
-            "direction": s.direction,
-            "magnitude": float(s.magnitude),
-            "public_at": s.public_at.isoformat(),
-            "sentence": narrate_signal(s.signal_type, s.parameters),
-            "evidence_ids": s.evidence_ids,
-        }
-        for s in signals
-    ]
+    # A signal derived from a filing table carries no quoted span, so point at the filing it
+    # was computed from: every sentence on the brief has to be checkable against a document.
+    financial_docs = {f.id: f.raw_document_id for f in pit.financials(company_id)}
+    narrated: list[dict[str, Any]] = []
+    for s in signals:
+        doc_ids: list[int] = []
+        if not s.evidence_ids:
+            for rec in s.source_records:
+                if not isinstance(rec, dict) or rec.get("table") != "financials":
+                    continue
+                doc = financial_docs.get(int(rec.get("id") or 0))
+                if doc is not None and doc not in doc_ids:
+                    doc_ids.append(doc)
+        narrated.append(
+            {
+                "signal_id": s.id,
+                "signal_type": s.signal_type,
+                "family": s.family,
+                "direction": s.direction,
+                "magnitude": float(s.magnitude),
+                "public_at": s.public_at.isoformat(),
+                "sentence": narrate_signal(s.signal_type, s.parameters),
+                "evidence_ids": s.evidence_ids,
+                "document_ids": doc_ids,
+            }
+        )
     strongest = max(signals, key=lambda s: (s.direction > 0, float(s.magnitude)), default=None)
 
     base_rows = [
