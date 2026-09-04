@@ -24,6 +24,11 @@ def too_small(ctx: DetectionContext, cfg: SignalCatalogue) -> bool:
     return ttm is None or float(ttm) < cfg.min_ttm_revenue_cr
 
 
+def implausible_margins(margins: list[Decimal | None], cfg: SignalCatalogue) -> bool:
+    """Guard against margins computed on a denominator that is not the operating base."""
+    return any(m is not None and abs(float(m)) > cfg.max_plausible_margin for m in margins)
+
+
 def _yoy(rows: list[Period], attr: str) -> list[float | None]:
     """YoY growth aligned to rows[4:]."""
     return [
@@ -76,7 +81,7 @@ def margin_inflection(ctx: DetectionContext, cfg: SignalCatalogue) -> list[Candi
     if len(q) < 6:
         return []
     margins = [p.margin for p in q]
-    if any(m is None for m in margins[-6:]):
+    if any(m is None for m in margins[-6:]) or implausible_margins(margins[-6:], cfg):
         return []
     deltas_bp: list[float] = []
     for i in (-2, -1):

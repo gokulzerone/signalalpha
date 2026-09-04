@@ -7,7 +7,7 @@ from typing import Any, ClassVar
 
 from pydantic import BaseModel, Field
 
-from agents.base import Agent, AgentContext, AgentInputs, ValidationFailure
+from agents.base import Agent, AgentContext, AgentInputs, NoInputsError, ValidationFailure
 from agents.common import header
 from agents.industry import metrics_for
 from agents.llm import template
@@ -32,7 +32,7 @@ class ValuationOutput(BaseModel):
 class ValuationAgent(Agent):
     name: ClassVar[str] = "valuation"
     output_model: ClassVar[type[BaseModel]] = ValuationOutput
-    requires: ClassVar[tuple[str, ...]] = ("business",)
+    requires: ClassVar[tuple[str, ...]] = ()
 
     def _inputs(self, actx: AgentContext) -> ScenarioInputs | None:
         ctx = actx.ctx
@@ -65,9 +65,12 @@ class ValuationAgent(Agent):
     def build_inputs(self, actx: AgentContext) -> AgentInputs:
         si = self._inputs(actx)
         if si is None:
-            raise ValidationFailure(["insufficient data for valuation scenarios"])
+            raise NoInputsError(
+                "scenarios need a balance sheet; quarterly filings carry only the profit and loss"
+            )
         cfg = load_score_config().valuation_scenarios
-        business = actx.outputs["business"].output or {}
+        business_run = actx.outputs.get("business")
+        business = (business_run.output or {}) if business_run else {}
         snap = {
             **header(actx),
             "inputs": si.__dict__,

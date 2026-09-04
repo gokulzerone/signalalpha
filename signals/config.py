@@ -23,6 +23,7 @@ class SignalCatalogue(BaseModel):
     version: str
     market_signal_cadence_days: int = 7
     min_ttm_revenue_cr: float = 5.0
+    max_plausible_margin: float = 1.0
     institution_keywords: list[str] = Field(default_factory=list)
     signals: dict[str, SignalSpec]
 

@@ -11,6 +11,7 @@ from agents.base import (
     AgentClaim,
     AgentContext,
     AgentInputs,
+    NoInputsError,
     ValidationFailure,
     check_numbers,
     collect_numbers,
@@ -50,7 +51,7 @@ class FinancialAgent(Agent):
 
     def build_inputs(self, actx: AgentContext) -> AgentInputs:
         if not actx.ctx.quarters:
-            raise ValidationFailure(["no quarterly financials are loaded for this company"])
+            raise NoInputsError("no quarterly financials are loaded for this company")
         snap = {
             **header(actx),
             "financials": financial_snapshot(actx),
@@ -150,12 +151,16 @@ def financial_template(snap: dict[str, Any]) -> dict[str, Any]:
         trajectory = "mixed"
     claims = []
     for label, value in (("Revenue from operations", rev), ("EBITDA", ebitda)):
+        # Tabular filings print "Revenue from operations | 86.67"; an Ind-AS XBRL filing
+        # carries the same fact in rupees, so look for both forms.
         line = line_containing(text, f"{label} | {money(value)}")
+        if line is None and value is not None:
+            line = line_containing(text, f"{value * 10_000_000:.2f}")
         if line:
             claims.append(
                 {
                     "text": f"{label} for the quarter was Rs. {money(value)} crore.",
-                    "quotes": [{"document_id": doc_id, "quote": line}],
+                    "quotes": [{"document_id": doc_id, "quote": line.strip()}],
                 }
             )
     if not claims:

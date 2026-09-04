@@ -40,10 +40,13 @@ class ThesisOutput(BaseModel):
 class ThesisAgent(Agent):
     name: ClassVar[str] = "thesis"
     output_model: ClassVar[type[BaseModel]] = ThesisOutput
-    requires: ClassVar[tuple[str, ...]] = (*UPSTREAM, "contradiction")
+    requires: ClassVar[tuple[str, ...]] = ("financial", "contradiction")
 
     def build_inputs(self, actx: AgentContext) -> AgentInputs:
-        outputs = {name: actx.outputs[name].output for name in self.requires}
+        wanted = (*UPSTREAM, "contradiction")
+        outputs = {
+            name: (actx.outputs[name].output if name in actx.outputs else None) for name in wanted
+        }
         snap = {**header(actx), "agent_outputs": outputs}
         inputs = AgentInputs(snapshot=snap)
         cited: set[int] = set()

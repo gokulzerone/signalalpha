@@ -13,6 +13,7 @@ from agents.base import (
     AgentClaim,
     AgentContext,
     AgentInputs,
+    NoInputsError,
     ValidationFailure,
     check_numbers,
     collect_numbers,
@@ -112,6 +113,8 @@ class IndustryAgent(Agent):
             add_document(inputs, ref, actx)
         for ref in latest_documents(actx, Source.CREDIT_RATING, 2, "Rating rationale"):
             add_document(inputs, ref, actx)
+        if not inputs.documents:
+            raise NoInputsError("no annual report or rating rationale is loaded for this company")
         allowed = collect_numbers({"c": company_metrics, "p": peers, "m": medians})
         inputs.allowed_numbers = allowed + [x * 100 for x in allowed if -5 < x < 5]
         return inputs

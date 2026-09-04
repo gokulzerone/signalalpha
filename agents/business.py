@@ -13,6 +13,7 @@ from agents.base import (
     AgentClaim,
     AgentContext,
     AgentInputs,
+    NoInputsError,
     ValidationFailure,
     check_numbers,
     numbers_in,
@@ -87,6 +88,8 @@ class BusinessAgent(Agent):
             add_document(inputs, ref, actx)
         for ref in latest_documents(actx, Source.CREDIT_RATING, 2, "Rating rationale"):
             add_document(inputs, ref, actx)
+        if not inputs.documents:
+            raise NoInputsError("no announcements or reports are loaded for this company")
         inputs.allowed_numbers = [snap["ttm_revenue_cr"] or 0.0] + [
             float(v)
             for s in snap["computed_signals"]

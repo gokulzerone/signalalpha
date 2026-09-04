@@ -57,6 +57,19 @@ class PrerequisiteMissingError(AgentError):
     pass
 
 
+class NoInputsError(AgentError):
+    """The data this agent reads has not been ingested for this company.
+
+    That is a fact about coverage, not a fault, so it is stored as a completed run whose
+    output says so. Downstream agents and the readiness checklist can then name the gap
+    instead of silently treating the company as unanalysable.
+    """
+
+    def __init__(self, reason: str) -> None:
+        super().__init__(reason)
+        self.reason = reason
+
+
 # ------------------------------------------------------------------ schemas
 class Quote(BaseModel):
     """A verbatim passage from one of the documents given to the agent."""
@@ -315,11 +328,34 @@ class Agent(ABC):
             .order_by(AgentRun.id.desc())
         ).first()
 
+    def _record_no_data(self, actx: AgentContext, reason: str) -> AgentRun:
+        record = AgentRun(
+            research_run_id=actx.run.id if actx.run else None,
+            company_id=actx.company.id,
+            agent_name=self.name,
+            as_of=actx.as_of,
+            model_id="none",
+            prompt_version=self.prompt_version,
+            input_snapshot_hash=f"no-data:{reason[:40]}",
+            status=RunStatus.COMPLETED,
+            validated=True,
+            validation_errors=[],
+            output={"status": "no_data", "reason": reason},
+            is_mock=actx.is_mock,
+        )
+        actx.session.add(record)
+        actx.session.flush()
+        actx.outputs[self.name] = record
+        return record
+
     def run(self, actx: AgentContext) -> AgentRun:
         for dep in self.requires:
             if dep not in actx.outputs or not actx.outputs[dep].validated:
                 raise PrerequisiteMissingError(f"{self.name} requires a validated {dep} run first")
-        inputs = self.build_inputs(actx)
+        try:
+            inputs = self.build_inputs(actx)
+        except NoInputsError as exc:
+            return self._record_no_data(actx, exc.reason)
         system = self.system_prompt()
         user = self.user_message(inputs)
         key = input_hash(system, user)

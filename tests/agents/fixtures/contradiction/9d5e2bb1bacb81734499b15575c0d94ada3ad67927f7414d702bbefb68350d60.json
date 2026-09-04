@@ -1,0 +1,29 @@
+{
+  "model_id": "template-v1",
+  "output": {
+    "case_against": "There are 0 negative signals and 0 forensic flags. The reported trajectory rests on a small number of quarters and may not persist; the base effect and one-off items are not separable from the filings alone.",
+    "cited_negative_signal_ids": [],
+    "claims": [
+      {
+        "quotes": [
+          {
+            "document_id": 1018,
+            "quote": "In our opinion, the financial statements give a true and fair view in conformity with the accounting principles generally accepted in India. Our opinion is not modified."
+          }
+        ],
+        "text": "The auditor's report states the opinion basis."
+      }
+    ],
+    "disputed_claims": [
+      {
+        "agent": "financial",
+        "claim": "Revenue from operations for the quarter ended 2026-03-31 was Rs. 86.67 crore and EBITDA was Rs. 14.96 crore. Revenue grew 4.18% year on year. The EBITDA margin was 17.26%.",
+        "dispute": "The reported trajectory rests on a small number of quarters and may not persist; the base effect and one-off items are not separable from the filings alone.",
+        "resolving_evidence": "Two further quarters of results at comparable margins and cash conversion."
+      }
+    ],
+    "thesis_survives": "yes"
+  },
+  "tokens_in": 3808,
+  "tokens_out": 268
+}

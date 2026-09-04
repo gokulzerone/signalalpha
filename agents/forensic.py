@@ -11,6 +11,7 @@ from agents.base import (
     AgentClaim,
     AgentContext,
     AgentInputs,
+    NoInputsError,
     ValidationFailure,
     check_numbers,
     collect_numbers,
@@ -63,6 +64,8 @@ class ForensicAgent(Agent):
         inputs = AgentInputs(snapshot=snap)
         for ref in latest_documents(actx, Source.ANNUAL_REPORT, 2, "Annual report"):
             add_document(inputs, ref, actx)
+        if not inputs.documents:
+            raise NoInputsError("no annual report is loaded for this company")
         allowed = collect_numbers(
             {"a": snap["annuals"], "h": snap["half_years"], "s": snap["computed_signals"]}
         )

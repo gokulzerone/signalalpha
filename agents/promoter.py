@@ -12,6 +12,7 @@ from agents.base import (
     AgentClaim,
     AgentContext,
     AgentInputs,
+    NoInputsError,
     ValidationFailure,
     check_numbers,
     collect_numbers,
@@ -107,7 +108,7 @@ class PromoterAgent(Agent):
             if b.public_at.date() >= since
         ]
         if not holdings and not pledges and not insiders:
-            raise ValidationFailure(["no ownership disclosures are loaded for this company"])
+            raise NoInputsError("no ownership disclosures are loaded for this company")
         snap = {
             **header(actx),
             "shareholdings": holdings,

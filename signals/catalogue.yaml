@@ -4,6 +4,9 @@ version: "signals-v2"
 # Ratio-based financial signals are suppressed below this trailing-twelve-month revenue:
 # a near-zero denominator turns rounding into a 700% "margin move".
 min_ttm_revenue_cr: 5.0
+# An operating margin outside this band means the denominator is not the operating base
+# (other income dominating a near-dormant business), so ratio signals are meaningless.
+max_plausible_margin: 1.0
 
 # Cadence (days) at which price-derived signals are evaluated.
 market_signal_cadence_days: 7

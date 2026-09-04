@@ -43,16 +43,22 @@ class ContradictionOutput(BaseModel):
 class ContradictionAgent(Agent):
     name: ClassVar[str] = "contradiction"
     output_model: ClassVar[type[BaseModel]] = ContradictionOutput
-    requires: ClassVar[tuple[str, ...]] = UPSTREAM
+    requires: ClassVar[tuple[str, ...]] = ("financial",)
 
     def build_inputs(self, actx: AgentContext) -> AgentInputs:
-        outputs = {name: actx.outputs[name].output for name in UPSTREAM}
+        outputs = {
+            name: (actx.outputs[name].output if name in actx.outputs else None) for name in UPSTREAM
+        }
+        missing = sorted(
+            name for name, out in outputs.items() if out is None or out.get("status") == "no_data"
+        )
         negatives = [s for s in signal_summaries(actx, None, 730) if s["direction"] < 0]
         snap = {
             **header(actx),
             "agent_outputs": outputs,
             "negative_signals": negatives,
             "forensic_flags": (outputs["forensic"] or {}).get("flags", []),
+            "unavailable_agents": missing,
         }
         inputs = AgentInputs(snapshot=snap)
         for ref in latest_documents(actx, Source.ANNUAL_REPORT, 1, "Annual report"):
