@@ -255,9 +255,13 @@ def test_opportunity_form_and_risk_penalty() -> None:
     assert risk_penalty(100.0, CFG) == 0.8 and risk_penalty(None, CFG) == 0.0
     scores["quality"] = _result("quality", 0.0)
     assert opportunity(scores, CFG, AS_OF).value == 0.0
+    # An unmeasurable component is excluded and flagged, not silently scored zero.
     scores["quality"] = _result("quality", None)
     r = opportunity(scores, CFG, AS_OF)
-    assert r.value == 0.0 and r.intermediates["zero_or_missing_components"] == ["quality"]
+    assert r.value is not None and r.value > 0
+    assert r.intermediates["partial"] is True
+    assert r.intermediates["missing_components"] == ["quality"]
+    assert r.intermediates["measured_components"] == ["attention_gap", "inflection", "valuation"]
 
 
 # ------------------------------------------------------------ property tests
@@ -281,10 +285,19 @@ def test_opportunity_zero_when_any_component_zero_or_missing(
         "attention_gap": _result("attention_gap", a),
         "risk": _result("risk", r),
     }
-    value = opportunity(scores, CFG, AS_OF).value
+    result = opportunity(scores, CFG, AS_OF)
+    value = result.value
+    if all(x is None for x in (inf, q, v, a)):
+        assert value is None, "nothing measurable means no score, not a zero"
+        return
     assert value is not None and 0.0 <= value <= 100.0
-    if any(x is None or x == 0 for x in (inf, q, v, a)):
+    # A component measured as zero collapses the composite; one that could not be measured
+    # is excluded from the mean and flagged instead.
+    if any(x == 0 for x in (inf, q, v, a) if x is not None):
         assert value == 0.0
+    if any(x is None for x in (inf, q, v, a)):
+        assert result.intermediates["partial"] is True
+        assert result.intermediates["missing_components"]
 
 
 @settings(max_examples=60, deadline=None)

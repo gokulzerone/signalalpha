@@ -419,22 +419,43 @@ def risk_penalty(risk_value: float | None, config: ScoreConfig) -> float:
 
 def opportunity(scores: Mapping[str, ScoreResult], config: ScoreConfig, as_of: date) -> ScoreResult:
     """Weighted geometric mean of Inflection, Quality, Valuation and Attention gap (as
-    fractions of 100), times ``1 - risk_penalty(Risk)``. Zero whenever any factor is zero or
-    missing (PRD §9, §14)."""
+    fractions of 100), times ``1 - risk_penalty(Risk)``.
+
+    A component measured as zero makes the whole thing zero: that is the PRD's multiplicative
+    form, and it is the point of it. A component that could not be *measured at all* is a
+    different thing and is not treated as a zero, because reporting zero would assert that the
+    company scored badly on something nobody looked at. The mean is taken over the components
+    that exist, and the result is marked ``partial`` with the ones that are missing named, so a
+    reader knows a partial score is not comparable with a complete one.
+    """
     company_id = next(iter(scores.values())).company_id
     weights = config.opportunity.weights
     components: dict[str, Component] = {}
-    log_sum = 0.0
-    total_w = sum(weights.values())
-    zero_or_missing: list[str] = []
+    measured: list[tuple[float, float]] = []
+    missing: list[str] = []
+    zeroed: list[str] = []
     for name, w in weights.items():
         v = scores[name].value if name in scores else None
         components[name] = Component(raw=v, percentile=v, weight=w, higher_is_better=True)
-        if v is None or v <= 0 or v / 100 <= 0.0:
-            zero_or_missing.append(name)
+        # Branch on the fraction actually used, so a value that underflows to zero when
+        # divided is treated as the zero it becomes rather than reaching log().
+        fraction = 0.0 if v is None else v / 100
+        if v is None:
+            missing.append(name)
+        elif fraction <= 0:
+            zeroed.append(name)
         else:
-            log_sum += w * math.log(v / 100)
-    geometric = 0.0 if zero_or_missing else math.exp(log_sum / total_w)
+            measured.append((fraction, w))
+
+    value: float | None
+    if zeroed:
+        geometric = 0.0
+    elif measured:
+        total_w = sum(w for _, w in measured)
+        geometric = math.exp(sum(w * math.log(f) for f, w in measured) / total_w)
+    else:
+        geometric = 0.0
+
     risk_value = scores["risk"].value if "risk" in scores else None
     penalty = risk_penalty(risk_value, config)
     components["risk"] = Component(
@@ -444,7 +465,8 @@ def opportunity(scores: Mapping[str, ScoreResult], config: ScoreConfig, as_of: d
         higher_is_better=False,
         contribution=-penalty,
     )
-    value = geometric * (1 - penalty) * 100
+    # Nothing measurable at all: a number here would be an invention.
+    value = None if not measured and not zeroed else geometric * (1 - penalty) * 100
     ids = sorted({sid for s in scores.values() for sid in s.signal_ids})
     return ScoreResult(
         "opportunity",
@@ -455,8 +477,11 @@ def opportunity(scores: Mapping[str, ScoreResult], config: ScoreConfig, as_of: d
         {
             "geometric_mean_fraction": geometric,
             "risk_penalty": penalty,
-            "zero_or_missing_components": zero_or_missing,
-            "form": "geometric(inflection,quality,valuation,attention_gap) * (1 - risk_penalty)",
+            "measured_components": sorted(n for n in weights if n not in missing),
+            "missing_components": sorted(missing),
+            "zero_components": sorted(zeroed),
+            "partial": bool(missing),
+            "form": "geometric(measured components) * (1 - risk_penalty)",
         },
         ids,
         config.version,

@@ -157,6 +157,7 @@ def desk(
     ] = 30,
     limit: Annotated[int, Query(ge=1, le=50)] = 8,
     include_decided: bool = False,
+    sort: Annotated[str, Query(pattern="^(opportunity|readiness)$")] = "opportunity",
 ) -> Envelope[DeskOut]:
     """A short queue of companies that changed, each with whether it can be decided on yet."""
     recent = q.signal_window(pit, since_days)
@@ -165,6 +166,13 @@ def desk(
     rates = _base_rates(pit)
     decisions = _latest_decisions(session, pit.is_mock)
     snapshots = {s.company_id: s for s in pit.universe()}
+    partials: dict[int, tuple[bool, list[str]]] = {}
+    for row in pit.universe_scores("opportunity"):
+        inter = row.components.get("intermediates", {}) if isinstance(row.components, dict) else {}
+        partials[row.company_id] = (
+            bool(inter.get("partial")),
+            list(inter.get("missing_components") or []),
+        )
     covered = {
         cid
         for (cid,) in session.execute(
@@ -223,10 +231,15 @@ def desk(
                 ),
                 signal_types=sorted({s.signal_type for s in signals}),
                 decision=_decision_out(decision, company) if decision else None,
+                opportunity_partial=partials.get(company.id, (False, []))[0],
+                opportunity_missing=partials.get(company.id, (False, []))[1],
             )
         )
     order = {"ready": 0, "partial": 1, "not_ready": 2}
-    rows.sort(key=lambda r: (order[r.readiness.status], -(r.scores.opportunity or 0)))
+    if sort == "readiness":
+        rows.sort(key=lambda r: (order[r.readiness.status], -(r.scores.opportunity or 0)))
+    else:
+        rows.sort(key=lambda r: (-(r.scores.opportunity or 0), order[r.readiness.status]))
 
     # When nothing changed in the requested window, say what the data can actually support.
     latest_signal = session.scalar(

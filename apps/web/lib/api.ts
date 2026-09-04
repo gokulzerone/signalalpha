@@ -144,6 +144,7 @@ export type DeskRow = {
   change: string; change_at: string | null; for_case: string; against_case: string;
   readiness: Readiness; scores: ScoreBrief; base_rate: Record<string, unknown> | null;
   signal_types: string[]; decision: Decision | null;
+  opportunity_partial: boolean; opportunity_missing: string[];
 };
 export type DeskCoverage = {
   covered_companies: number; companies_with_signals: number; latest_signal_at: string | null;

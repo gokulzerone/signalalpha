@@ -8,7 +8,14 @@ its output (PRD §16, enforced by a test).
 
 ## The flow
 
-**1. The desk (`/`)** replaces the wall of rows with a short queue. Each card carries one
+**1. The list (`/`)** is a ranked answer to "which of these deserves my time". It sorts by
+Opportunity, puts the rank, the company, the composite score and the one-sentence change
+first and largest, and keeps the component scores, readiness and base rate as supporting
+detail. It opens on a date the data can actually support rather than on an empty today, has
+a refresh control, and every row opens the full reasoning.
+
+The older grouped queue is still there behind "sort by readiness". The original description
+of it: it replaces the wall of rows with a short queue. Each card carries one
 plain sentence about what changed, the strongest point for and against, what signals of that
 kind did historically, and a badge saying whether the research is complete enough to form a
 view. Cards that are not decidable are separated out and each says what it is waiting for.
@@ -66,3 +73,15 @@ Rather than fail, an agent whose source is absent records a completed run whose 
 exists and says in its own case which part could not be assessed, and the readiness
 checklist names the same gap in the reader's language. The single hard dependency from the
 PRD survives untouched: there is no thesis without a contradiction.
+
+## Measured zero versus unmeasurable
+
+The Opportunity composite is multiplicative, so a component measured as zero collapses it.
+That is deliberate. A component that could not be *measured at all* is a different thing: the
+mean is taken over the components that exist, the result is flagged `partial` with the
+missing ones named, and the reader is told that a dash is an unmeasured component rather than
+a bad one, and that a partial score is not comparable with a complete one.
+
+This matters on live data. Quality reads return on capital, cash conversion, receivable days
+and promoter holding, none of which appear in an Indian quarterly filing. Treating that as a
+zero scored every real company at zero and made the ranking useless while looking confident.

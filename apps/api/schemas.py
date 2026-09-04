@@ -326,6 +326,9 @@ class DeskRow(BaseModel):
     base_rate: dict[str, object] | None
     signal_types: list[str]
     decision: DecisionOut | None
+    opportunity_partial: bool
+    """True when the composite excludes a component that could not be measured."""
+    opportunity_missing: list[str]
 
 
 class DeskCoverage(BaseModel):

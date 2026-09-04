@@ -21,7 +21,9 @@ def _id(session: Session, story: Story, nth: int = 0) -> int:
 def test_desk_is_a_short_queue_with_readiness(
     client: TestClient, mock_scores: int, mock_backtest: int
 ) -> None:
-    r = client.get("/api/v1/desk", params={**AS_OF, "since_days": 180, "limit": 8})
+    r = client.get(
+        "/api/v1/desk", params={**AS_OF, "since_days": 180, "limit": 8, "sort": "readiness"}
+    )
     assert r.status_code == 200, r.text
     body = r.json()["data"]
     rows = body["rows"]
@@ -40,6 +42,14 @@ def test_desk_is_a_short_queue_with_readiness(
     order = ["ready", "partial", "not_ready"]
     positions = [order.index(x["readiness"]["status"]) for x in rows]
     assert positions == sorted(positions)
+
+
+def test_desk_ranks_by_opportunity_by_default(client: TestClient, mock_scores: int) -> None:
+    rows = client.get("/api/v1/desk", params={**AS_OF, "since_days": 180, "limit": 10}).json()[
+        "data"
+    ]["rows"]
+    scores = [r["scores"]["opportunity"] or 0 for r in rows]
+    assert scores == sorted(scores, reverse=True), "the list answers 'what deserves my time first'"
 
 
 def test_desk_and_brief_never_use_trading_language(

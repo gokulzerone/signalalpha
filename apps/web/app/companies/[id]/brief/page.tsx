@@ -74,6 +74,14 @@ export default async function BriefPage({ params, searchParams }: { params: Prom
             <span key={s.score_type} className="text-[12px] text-muted">{s.score_type} <b className={`text-[16px] ${scoreTone(s.score_type, s.value)}`}>{fmt.score(s.value)}</b></span>
           ))}
         </div>
+        {b.scores.some((s) => s.score_type === "quality" && s.value === null) && (
+          <p className="text-[12px] text-warn max-w-[70ch] mb-2">
+            Quality could not be measured. It reads return on capital, cash conversion, receivable days and promoter
+            holding, and none of those are in the filings held for this company: quarterly Indian results carry the
+            profit and loss but not the balance sheet or the shareholding pattern. A dash is an unmeasured component,
+            not a bad one.
+          </p>
+        )}
         {b.forensic_flags.length ? b.forensic_flags.map((f, i) => (
           <div key={i} className="text-[13px] mb-2">
             <b className={f.severity === "high" ? "neg" : "warn"}>{f.severity}</b> <b>{f.signal_type.replace(/_/g, " ")}</b> — {f.mechanism}
@@ -93,7 +101,13 @@ export default async function BriefPage({ params, searchParams }: { params: Prom
                 <td className={`n ${s.implied_change_vs_price >= 0 ? "pos" : "neg"}`}>{fmt.pct(s.implied_change_vs_price)}</td></tr>
             ))}</tbody>
           </table></div>
-        ) : <div className="muted text-[13px]">Not enough data for scenarios.</div>}
+        ) : (
+          <div className="text-[13px] text-muted max-w-[70ch]">
+            Scenarios need net debt, which comes from the balance sheet. Indian quarterly filings carry only the profit
+            and loss, so this stays blank until a half-yearly or annual filing is ingested. Guessing at net debt would
+            put a number here that nothing supports.
+          </div>
+        )}
         <div className="tick mt-1">Scenarios are arithmetic from stated assumptions, not forecasts. Edit them on the <Link href={`/companies/${cid}${q}`}>research page</Link>.</div>
       </section>
 
