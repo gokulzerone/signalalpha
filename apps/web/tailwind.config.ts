@@ -1,21 +1,30 @@
 import type { Config } from "tailwindcss";
 
+// Colours are exposed as tokens only; components never name a raw hex, so both themes stay
+// in step and nothing can be tinted by accident.
 const config: Config = {
   content: ["./app/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}"],
   theme: {
     extend: {
       colors: {
-        ink: { 900: "#0b0f14", 800: "#11161d", 700: "#182029", 600: "#222b36", 500: "#2d3947" },
-        accent: "#e2a93b",
-        panel: "#141b24",
-        panel2: "#1a2330",
-        rule: "#263140",
-        pos: "#3ddc97",
-        neg: "#ff6b6b",
-        warn: "#ffc857",
-        muted: "#8b98a8",
+        ground: "var(--ground)",
+        surface: "var(--surface)",
+        raised: "var(--raised)",
+        ink: { DEFAULT: "var(--ink)", 2: "var(--ink-2)", 3: "var(--ink-3)" },
+        rule: { DEFAULT: "var(--rule)", strong: "var(--rule-strong)" },
+        link: "var(--link)",
+        pos: "var(--pos)",
+        neg: "var(--neg)",
+        caution: "var(--caution)",
+        bar: "var(--bar)",
       },
-      fontFamily: { mono: ["ui-monospace", "SFMono-Regular", "Menlo", "monospace"] },
+      fontFamily: {
+        sans: ["Archivo", "ui-sans-serif", "system-ui", "sans-serif"],
+        serif: ["Source Serif 4", "Georgia", "serif"],
+        mono: ["IBM Plex Mono", "ui-monospace", "Menlo", "monospace"],
+      },
+      maxWidth: { measure: "68ch" },
+      boxShadow: { card: "var(--shadow)" },
     },
   },
   plugins: [],

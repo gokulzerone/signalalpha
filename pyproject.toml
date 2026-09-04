@@ -85,4 +85,6 @@ source = ["scoring", "signals", "evidence", "backtesting", "database"]
 "decisions/narrate.py" = ["E501"]
 # Readiness checks read better as one line per check.
 "decisions/readiness.py" = ["E501"]
+# Verdict wording reads better as one sentence per line.
+"decisions/verdict.py" = ["E501"]
 "apps/api/routers/desk.py" = ["E501"]

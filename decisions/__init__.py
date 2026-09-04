@@ -18,12 +18,16 @@ not appear in any output (PRD §16).
 from decisions.narrate import narrate_signal, narrate_summary
 from decisions.readiness import Readiness, ReadinessCheck, assess_readiness
 from decisions.sizing import LiquidityProfile, liquidity_profile
+from decisions.verdict import FactorLine, Verdict, build_verdict
 
 __all__ = [
+    "FactorLine",
     "LiquidityProfile",
     "Readiness",
     "ReadinessCheck",
+    "Verdict",
     "assess_readiness",
+    "build_verdict",
     "liquidity_profile",
     "narrate_signal",
     "narrate_summary",

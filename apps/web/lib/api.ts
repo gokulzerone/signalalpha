@@ -164,8 +164,16 @@ export type Liquidity = {
   adv_inr: number | null; participation_pct: number; comfortable_position_inr: number | null;
   days_to_exit: Record<string, number>; round_trip_cost_pct: number | null; illiquid: boolean;
 };
+export type Factor = {
+  key: string; label: string; value: number | null; verdict: string; measures: string;
+  higher_is_better: boolean; measured: boolean;
+};
+export type VerdictOut = {
+  headline: string; summary: string[]; caveats: string[]; factors: Factor[]; strong: number; checkable: number;
+};
 export type Brief = {
-  company: CompanyProfile; change: string; change_at: string | null; narrated_signals: NarratedSignal[];
+  company: CompanyProfile;
+  verdict: VerdictOut; change: string; change_at: string | null; narrated_signals: NarratedSignal[];
   readiness: Readiness; scores: ScoreOut[]; base_rates: BaseRate[]; liquidity: Liquidity;
   valuation: Valuation | null; thesis: Thesis; forensic_flags: { signal_type: string; severity: string; mechanism: string; claims: Claim[] }[];
   break_conditions: { text: string; source: string }[]; evidence: Evidence[]; decisions: Decision[];

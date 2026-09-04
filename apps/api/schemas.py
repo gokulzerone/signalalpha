@@ -374,8 +374,28 @@ class BreakCondition(BaseModel):
     source: str
 
 
+class FactorOut(BaseModel):
+    key: str
+    label: str
+    value: float | None
+    verdict: str
+    measures: str
+    higher_is_better: bool
+    measured: bool
+
+
+class VerdictOut(BaseModel):
+    headline: str
+    summary: list[str]
+    caveats: list[str]
+    factors: list[FactorOut]
+    strong: int
+    checkable: int
+
+
 class BriefOut(BaseModel):
     company: CompanyProfile
+    verdict: VerdictOut
     change: str
     change_at: datetime | None
     narrated_signals: list[dict[str, object]]

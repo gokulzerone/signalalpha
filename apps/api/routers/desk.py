@@ -32,6 +32,7 @@ from apps.api.schemas import (
     EvidenceOut,
     ReadinessOut,
     ScoreOut,
+    VerdictOut,
 )
 from database.models import (
     BacktestRun,
@@ -52,6 +53,7 @@ from decisions.readiness import (
     next_review_default,
 )
 from decisions.sizing import liquidity_profile
+from decisions.verdict import build_verdict
 
 router = APIRouter(tags=["desk"])
 IST = ZoneInfo("Asia/Kolkata")
@@ -413,8 +415,29 @@ def brief(
         .order_by(Decision.created_at.desc())
     ).all()
 
+    score_map = {
+        s.score_type: (None if s.value is None else float(s.value)) for s in pit.scores(company_id)
+    }
+    verdict = build_verdict(
+        {
+            k: score_map.get(k)
+            for k in ("inflection", "quality", "valuation", "attention_gap", "risk")
+        },
+        change_sentence=narrate_signal(strongest.signal_type, strongest.parameters)
+        if strongest
+        else None,
+        readiness_gaps=[c.to_resolve for c in readiness.checks if not c.passed and c.to_resolve],
+        liquidity_days_to_exit=liq.days_to_exit.get("10L"),
+        base_rate_known=any(
+            not r.low_sample for r in base_rows if r.horizon_days == DEFAULT_HORIZON
+        ),
+        negative_count=len([s for s in signals if s.direction < 0]),
+        forensic_flags=flags,
+    )
+
     data = BriefOut(
         company=profile,
+        verdict=VerdictOut.model_validate(verdict.to_json()),
         change=narrate_signal(strongest.signal_type, strongest.parameters)
         if strongest
         else "No signals in this window.",
