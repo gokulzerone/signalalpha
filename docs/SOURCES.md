@@ -42,3 +42,29 @@ credit-rating rationales, surveillance lists and index constituents (PRD §5.1) 
 fetcher yet, so ownership and most forensic signals stay silent on live companies. Each would
 follow the same contract: a URL template in `data/sources.yaml`, a versioned parser with a
 golden-file test, a feature flag, and a row in this table.
+
+## What a real run actually produced
+
+Ingested on 2026-09-04 with `scripts/sync_live.py --price-days 420 --universe 60`:
+
+| | |
+|---|---|
+| NSE companies on file | 2,288 (the whole `EQ` series) |
+| Daily price rows | ~1.2 million, 397 trading days to 2026-09-03 |
+| Companies with quarterly fundamentals | 29, up to 18 quarters each, 366 rows |
+| Signals detected | 161 across the universe |
+| Backtest | 2,945 event-horizons over 201 groups |
+
+Coverage, not correctness, is the limit. Prices cover every listed company; fundamentals
+cover only the companies whose XBRL filings were fetched, and each one costs about ten
+requests at the configured rate limit, so widening the universe is a matter of running the
+sync for longer. The desk only offers companies whose fundamentals are loaded, and the
+readiness checklist on every other company says which source is missing.
+
+Two things the exchange's own data forced on the design. Quarterly Ind-AS filings carry the
+profit and loss but not the balance sheet, so net debt, receivables and cash-flow signals
+stay silent on live names until half-yearly filings are ingested; the Valuation agent
+records this as a coverage gap rather than guessing at net debt. And a handful of near-
+dormant filers report other income against negligible revenue, which produced margin
+"moves" of several hundred percent until the catalogue gained a minimum revenue base and a
+plausibility bound on the ratio.

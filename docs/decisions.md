@@ -56,3 +56,13 @@ missing the sentence degrades to the definition rather than inventing a figure.
 `decisions/sizing.py` answers how many trading days a given position would take to exit at a
 stated participation rate, and what the round trip costs. It never suggests a position size;
 it shows the constraint and leaves the number to the reader.
+
+## When a source is missing
+
+Live coverage is uneven: prices exist for every listed company, fundamentals for the ones
+whose filings have been fetched, and ownership or annual-report data for none of them yet.
+Rather than fail, an agent whose source is absent records a completed run whose output is
+`{"status": "no_data", "reason": ...}`. The Contradiction agent then reads whatever work
+exists and says in its own case which part could not be assessed, and the readiness
+checklist names the same gap in the reader's language. The single hard dependency from the
+PRD survives untouched: there is no thesis without a contradiction.
