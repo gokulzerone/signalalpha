@@ -340,6 +340,16 @@ def brief(
             )
         )
 
+    # The thesis and the contradiction often name the same resolving evidence.
+    seen: set[str] = set()
+    deduped: list[BreakCondition] = []
+    for cond in breaks:
+        key = cond.text.strip().lower()
+        if key and key not in seen:
+            seen.add(key)
+            deduped.append(cond)
+    breaks = deduped
+
     rows = session.scalars(
         select(Decision)
         .where(Decision.company_id == company_id, Decision.is_mock == pit.is_mock)

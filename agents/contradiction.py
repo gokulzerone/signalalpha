@@ -156,8 +156,17 @@ def contradiction_template(snap: dict[str, Any]) -> dict[str, Any]:
             }
         )
     survives = "no" if len(flags) >= 2 else "weakened" if negatives or flags else "yes"
+    absent = snap.get("unavailable_agents") or []
+    gap = (
+        " No "
+        + ", ".join(a.replace("_", " ") for a in absent)
+        + " analysis was possible: those sources are not loaded for this company, so part of"
+        " the case against cannot be assessed."
+        if absent
+        else ""
+    )
     case = (
-        f"There are {len(negatives)} negative signals and {len(flags)} forensic flags. "
+        f"There are {len(negatives)} negative signals and {len(flags)} forensic flags.{gap} "
         + disputes[0]["dispute"]
     )
     return {
