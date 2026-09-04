@@ -328,6 +328,32 @@ class DeskRow(BaseModel):
     decision: DecisionOut | None
 
 
+class DeskCoverage(BaseModel):
+    """What the desk can see, so an empty queue can say why rather than just being empty."""
+
+    covered_companies: int
+    """Companies whose fundamentals are loaded; only these can be assessed."""
+    companies_with_signals: int
+    latest_signal_at: datetime | None
+    latest_fundamental_period_end: date | None
+    window_days: int
+    suggested_window_days: int | None
+    """The narrowest window holding at least one change, when the current one is empty."""
+    fundamentals_stale_days: int | None
+    """How far the newest reported quarter sits behind the viewing date."""
+    suggested_as_of: date | None
+    """The most recent date at which the fundamentals on file were still current.
+
+    Set only when the current viewing date is looking at stale fundamentals, so the reader can
+    move to a date this dataset can actually support instead of seeing an empty desk.
+    """
+
+
+class DeskOut(BaseModel):
+    rows: list[DeskRow]
+    coverage: DeskCoverage
+
+
 class BaseRateOut(BaseModel):
     signal_type: str
     horizon_days: int

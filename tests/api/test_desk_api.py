@@ -23,8 +23,10 @@ def test_desk_is_a_short_queue_with_readiness(
 ) -> None:
     r = client.get("/api/v1/desk", params={**AS_OF, "since_days": 180, "limit": 8})
     assert r.status_code == 200, r.text
-    rows = r.json()["data"]
+    body = r.json()["data"]
+    rows = body["rows"]
     assert 0 < len(rows) <= 8, "the desk is a queue, not the whole universe"
+    assert body["coverage"]["covered_companies"] > 0
     for row in rows:
         assert row["change"] and row["change"][0].isupper() and row["change"].endswith(".")
         assert row["readiness"]["status"] in ("ready", "partial", "not_ready")
@@ -133,4 +135,18 @@ def test_desk_reflects_the_as_of_date(client: TestClient, mock_scores: int) -> N
     early = client.get("/api/v1/desk", params={"as_of": "2024-06-30", "since_days": 90}).json()
     late = client.get("/api/v1/desk", params={**AS_OF, "since_days": 90}).json()
     assert early["as_of"].startswith("2024-06-30")
-    assert {r["ticker"] for r in early["data"]} != {r["ticker"] for r in late["data"]}
+    assert {r["ticker"] for r in early["data"]["rows"]} != {
+        r["ticker"] for r in late["data"]["rows"]
+    }
+
+
+def test_empty_desk_explains_itself(client: TestClient, mock_scores: int) -> None:
+    """A window with no changes must say why and name a window that would hold some."""
+    body = client.get("/api/v1/desk", params={"as_of": "2022-07-15", "since_days": 1}).json()[
+        "data"
+    ]
+    assert body["rows"] == []
+    cov = body["coverage"]
+    assert cov["window_days"] == 1
+    if cov["latest_signal_at"]:
+        assert cov["suggested_window_days"] and cov["suggested_window_days"] > 1

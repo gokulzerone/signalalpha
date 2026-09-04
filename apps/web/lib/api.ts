@@ -145,6 +145,12 @@ export type DeskRow = {
   readiness: Readiness; scores: ScoreBrief; base_rate: Record<string, unknown> | null;
   signal_types: string[]; decision: Decision | null;
 };
+export type DeskCoverage = {
+  covered_companies: number; companies_with_signals: number; latest_signal_at: string | null;
+  latest_fundamental_period_end: string | null; window_days: number; suggested_window_days: number | null;
+  fundamentals_stale_days: number | null; suggested_as_of: string | null;
+};
+export type DeskResponse = { rows: DeskRow[]; coverage: DeskCoverage };
 export type BaseRate = {
   signal_type: string; horizon_days: number; n: number; low_sample: boolean;
   hit_rate: number | null; mean_excess: number | null; median_excess: number | null; ci_low: number | null; ci_high: number | null;

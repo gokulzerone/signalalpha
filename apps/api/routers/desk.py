@@ -12,7 +12,7 @@ from typing import Annotated, Any
 from zoneinfo import ZoneInfo
 
 from fastapi import APIRouter, HTTPException, Query
-from sqlalchemy import select
+from sqlalchemy import func, select
 
 from apps.api import queries as q
 from apps.api.deps import DatasetDep, PitDep, SessionDep
@@ -25,6 +25,8 @@ from apps.api.schemas import (
     BriefOut,
     DecisionIn,
     DecisionOut,
+    DeskCoverage,
+    DeskOut,
     DeskRow,
     Envelope,
     EvidenceOut,
@@ -43,12 +45,20 @@ from database.models import (
 )
 from database.pit import PointInTimeSession
 from decisions.narrate import narrate_signal
-from decisions.readiness import ReadinessInputs, assess_readiness, next_review_default
+from decisions.readiness import (
+    STALE_AFTER_DAYS,
+    ReadinessInputs,
+    assess_readiness,
+    next_review_default,
+)
 from decisions.sizing import liquidity_profile
 
 router = APIRouter(tags=["desk"])
 IST = ZoneInfo("Asia/Kolkata")
 DEFAULT_HORIZON = 180
+#: Indian quarterly results are filed within about 45 days; a quarter plus that lag is the
+#: point at which a filing stops being the current picture.
+REPORTING_LAG_DAYS = 90
 
 
 # ------------------------------------------------------------------- helpers
@@ -138,7 +148,7 @@ def _readiness_for(
 
 
 # ---------------------------------------------------------------------- desk
-@router.get("/desk", response_model=Envelope[list[DeskRow]])
+@router.get("/desk", response_model=Envelope[DeskOut])
 def desk(
     pit: PitDep,
     session: SessionDep,
@@ -147,7 +157,7 @@ def desk(
     ] = 30,
     limit: Annotated[int, Query(ge=1, le=50)] = 8,
     include_decided: bool = False,
-) -> Envelope[list[DeskRow]]:
+) -> Envelope[DeskOut]:
     """A short queue of companies that changed, each with whether it can be decided on yet."""
     recent = q.signal_window(pit, since_days)
     scores, scores_as_of = q.score_map(pit)
@@ -217,7 +227,41 @@ def desk(
         )
     order = {"ready": 0, "partial": 1, "not_ready": 2}
     rows.sort(key=lambda r: (order[r.readiness.status], -(r.scores.opportunity or 0)))
-    return wrap(pit, rows[:limit])
+
+    # When nothing changed in the requested window, say what the data can actually support.
+    latest_signal = session.scalar(
+        select(func.max(Signal.public_at)).where(
+            Signal.is_mock == pit.is_mock,
+            Signal.public_at <= pit.as_of,
+            Signal.company_id.in_(covered or {0}),
+        )
+    )
+    latest_period = session.scalar(
+        select(func.max(Financial.period_end)).where(
+            Financial.is_mock == pit.is_mock, Financial.public_at <= pit.as_of
+        )
+    )
+    suggested: int | None = None
+    if not rows and latest_signal is not None:
+        gap = (pit.as_of - latest_signal).days + 1
+        suggested = min(365, max(since_days, gap))
+    # A quarterly filer is current for roughly a reporting lag plus the quarter itself; past
+    # that the desk is reading history, and should offer the date where the data was live.
+    stale_days = (pit.as_of_date - latest_period).days if latest_period else None
+    suggested_as_of = None
+    if latest_period is not None and stale_days is not None and stale_days > STALE_AFTER_DAYS:
+        suggested_as_of = min(latest_period + timedelta(days=REPORTING_LAG_DAYS), pit.as_of_date)
+    coverage = DeskCoverage(
+        covered_companies=len(covered),
+        companies_with_signals=len([c for c in recent if c in covered]),
+        latest_signal_at=latest_signal,
+        latest_fundamental_period_end=latest_period,
+        window_days=since_days,
+        suggested_window_days=suggested,
+        fundamentals_stale_days=stale_days,
+        suggested_as_of=suggested_as_of,
+    )
+    return wrap(pit, DeskOut(rows=rows[:limit], coverage=coverage))
 
 
 # --------------------------------------------------------------------- brief

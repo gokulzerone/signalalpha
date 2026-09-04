@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { api, type DeskRow } from "@/lib/api";
+import { api, type DeskResponse, type DeskRow } from "@/lib/api";
 import { fmt, scoreTone } from "@/lib/format";
 import { ReadinessBadge } from "@/components/Readiness";
 
@@ -7,10 +7,14 @@ import { ReadinessBadge } from "@/components/Readiness";
 export default async function Desk({ searchParams }: { searchParams: Promise<{ as_of?: string; since?: string; all?: string }> }) {
   const sp = await searchParams;
   const since = Number(sp.since ?? 30);
-  const desk = await api<DeskRow[]>("/desk", { as_of: sp.as_of, since_days: since, limit: 12, include_decided: sp.all === "1" ? "true" : undefined });
+  const desk = await api<DeskResponse>("/desk", { as_of: sp.as_of, since_days: since, limit: 12, include_decided: sp.all === "1" ? "true" : undefined });
+  const { rows, coverage } = desk.data;
   const q = sp.as_of ? `?as_of=${sp.as_of}` : "";
-  const ready = desk.data.filter((r) => r.readiness.status !== "not_ready");
-  const blocked = desk.data.filter((r) => r.readiness.status === "not_ready");
+  const ready = rows.filter((r) => r.readiness.status !== "not_ready");
+  const blocked = rows.filter((r) => r.readiness.status === "not_ready");
+  const widen = coverage.suggested_window_days;
+  const keep = sp.as_of ? `as_of=${sp.as_of}&` : "";
+  const staleAsOf = coverage.suggested_as_of ? fmt.date(coverage.suggested_as_of) : null;
 
   const Card = ({ r }: { r: DeskRow }) => (
     <article className="panel grid gap-2">
@@ -49,7 +53,44 @@ export default async function Desk({ searchParams }: { searchParams: Promise<{ a
         Each card says what changed, the strongest point either way, and what history says about signals of that kind.
         {" "}<Link href={`/screener${q}`}>Full screener</Link> · <Link href={`/journal${q}`}>Journal</Link>
       </div>
-      {desk.data.length === 0 && <div className="panel empty">Nothing changed in this window. Widen it with <span className="mono">?since=90</span>.</div>}
+      {staleAsOf && (
+        <div className="panel" style={{ borderLeft: "3px solid var(--tw-warn, #ffc857)" }}>
+          <div className="text-warn text-[13px]">
+            You are looking at a date {coverage.fundamentals_stale_days} days past the newest results on file.
+          </div>
+          <p className="text-[13px] text-muted max-w-[75ch] mt-1">
+            Prices and announcements are current, but the newest reported quarter ends{" "}
+            <span className="mono">{fmt.date(coverage.latest_fundamental_period_end)}</span>, so nothing here can be
+            judged on current fundamentals. The exchange&apos;s results feed serves nothing newer; the{" "}
+            <Link href="/data">data page</Link> shows freshness per source.
+          </p>
+          <p className="text-[13px] mt-2">
+            <Link href={`/?as_of=${staleAsOf}&since=200`}>View as of {staleAsOf}</Link>, when these fundamentals were
+            current.
+          </p>
+        </div>
+      )}
+      {rows.length === 0 && (
+        <div className="panel">
+          <h2 className="mb-2">Nothing to decide on in this window</h2>
+          <p className="text-[13px] max-w-[70ch] text-muted">
+            {coverage.covered_companies === 0 ? (
+              <>No company has fundamentals loaded yet, so nothing can be assessed. Run <span className="mono">scripts/sync_live.py</span> to ingest quarterly results, or switch to the mock universe.</>
+            ) : (
+              <>
+                {coverage.covered_companies} companies have fundamentals loaded, and none of them disclosed a change in the last {since} days.
+                {coverage.latest_signal_at && <> The most recent change on file is from <span className="mono">{fmt.date(coverage.latest_signal_at)}</span>.</>}
+                {coverage.latest_fundamental_period_end && <> The newest reported quarter ends <span className="mono">{fmt.date(coverage.latest_fundamental_period_end)}</span>.</>}
+              </>
+            )}
+          </p>
+          {widen && (
+            <p className="mt-2 text-[13px]">
+              <Link href={`/?${keep}since=${widen}`}>Widen the window to {widen} days</Link> to see what did change.
+            </p>
+          )}
+        </div>
+      )}
       {ready.length > 0 && (
         <section className="grid gap-3">
           <h2>Ready for a view <span className="muted">({ready.length})</span></h2>
