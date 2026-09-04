@@ -18,6 +18,9 @@ the selected company.
 
 ## Running locally without Docker
 
+The dev and start scripts serve the app directly; the container image sets
+`NEXT_STANDALONE=1` so the build emits a self-contained server instead.
+
 ```bash
 make bootstrap   # embedded PostgreSQL under ~/.signalalpha, mock universe, signals, scores, backtest, agents
 make api         # http://localhost:8000
