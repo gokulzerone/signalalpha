@@ -136,7 +136,14 @@ def forward_leg(
 
 
 class Benchmark:
-    """Equal-weight return of the index's historical constituents over a window."""
+    """Equal-weight return of the index's historical constituents over a window.
+
+    When no index membership has been ingested for a dataset, this falls back to an
+    equal-weight basket of the companies in the versioned universe on that date. That is a
+    weaker comparator than a published index and is labelled as such on the run
+    (``benchmark_kind``), but it keeps excess returns meaningful instead of discarding every
+    event for want of a benchmark.
+    """
 
     def __init__(
         self,
@@ -149,12 +156,17 @@ class Benchmark:
         self.index_name = index_name
         self.series = series
         self.config = config
+        self.kind = "index"
         self._members: dict[date, list[int]] = {}
         self._cache: dict[tuple[date, int], float | None] = {}
 
     def members(self, on: date) -> list[int]:
         if on not in self._members:
-            self._members[on] = self.pit.index_constituents(self.index_name, on)
+            listed = self.pit.index_constituents(self.index_name, on)
+            if not listed:
+                self.kind = "universe_equal_weight"
+                listed = [s.company_id for s in self.pit.universe(on) if s.in_universe]
+            self._members[on] = listed
         return self._members[on]
 
     def forward_return(self, public_date: date, horizon_days: int) -> float | None:

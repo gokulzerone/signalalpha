@@ -106,6 +106,8 @@ class PromoterAgent(Agent):
             for b in ctx.bulk_deals
             if b.public_at.date() >= since
         ]
+        if not holdings and not pledges and not insiders:
+            raise ValidationFailure(["no ownership disclosures are loaded for this company"])
         snap = {
             **header(actx),
             "shareholdings": holdings,

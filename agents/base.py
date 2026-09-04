@@ -377,6 +377,10 @@ class Agent(ABC):
             record.status = RunStatus.FAILED
             actx.session.flush()
             raise
+        except Exception as exc:  # one agent must not stop the pipeline
+            record.status = RunStatus.FAILED
+            record.validation_errors = [f"{type(exc).__name__}: {exc}"]
+            record.output = record.output or {"raw": None}
         actx.session.flush()
         actx.outputs[self.name] = record
         return record

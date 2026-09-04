@@ -339,6 +339,7 @@ class Backtester:
                 "score_dates": [d.isoformat() for d in score_dates or []],
                 "horizons": self.config.horizons_days,
                 "include_illiquid": self.config.include_illiquid,
+                "benchmark_kind": self.benchmark.kind if self.benchmark else None,
             },
             is_mock=self.is_mock,
         )

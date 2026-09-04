@@ -18,6 +18,12 @@ from signals.detectors.base import (
 )
 
 
+def too_small(ctx: DetectionContext, cfg: SignalCatalogue) -> bool:
+    """Ratio signals need a real revenue base to mean anything."""
+    ttm = ctx.ttm_revenue()
+    return ttm is None or float(ttm) < cfg.min_ttm_revenue_cr
+
+
 def _yoy(rows: list[Period], attr: str) -> list[float | None]:
     """YoY growth aligned to rows[4:]."""
     return [
@@ -27,6 +33,8 @@ def _yoy(rows: list[Period], attr: str) -> list[float | None]:
 
 @detector("revenue_acceleration")
 def revenue_acceleration(ctx: DetectionContext, cfg: SignalCatalogue) -> list[Candidate]:
+    if too_small(ctx, cfg):
+        return []
     q = ctx.quarters
     if len(q) < 9:
         return []
@@ -62,6 +70,8 @@ def revenue_acceleration(ctx: DetectionContext, cfg: SignalCatalogue) -> list[Ca
 
 @detector("margin_inflection")
 def margin_inflection(ctx: DetectionContext, cfg: SignalCatalogue) -> list[Candidate]:
+    if too_small(ctx, cfg):
+        return []
     q = ctx.quarters
     if len(q) < 6:
         return []
@@ -105,6 +115,8 @@ def margin_inflection(ctx: DetectionContext, cfg: SignalCatalogue) -> list[Candi
 
 @detector("operating_leverage")
 def operating_leverage(ctx: DetectionContext, cfg: SignalCatalogue) -> list[Candidate]:
+    if too_small(ctx, cfg):
+        return []
     q = ctx.quarters
     if len(q) < 6:
         return []

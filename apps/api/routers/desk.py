@@ -36,6 +36,7 @@ from database.models import (
     Company,
     Conviction,
     Decision,
+    Financial,
     Signal,
     SignalPerformance,
     Verdict,
@@ -154,10 +155,18 @@ def desk(
     rates = _base_rates(pit)
     decisions = _latest_decisions(session, pit.is_mock)
     snapshots = {s.company_id: s for s in pit.universe()}
+    covered = {
+        cid
+        for (cid,) in session.execute(
+            select(Financial.company_id)
+            .where(Financial.is_mock == pit.is_mock, Financial.public_at <= pit.as_of)
+            .group_by(Financial.company_id)
+        ).all()
+    }
     rows: list[DeskRow] = []
     for company in pit.companies():
         signals = recent.get(company.id, [])
-        if not signals:
+        if not signals or company.id not in covered:
             continue
         decision = decisions.get(company.id)
         if decision is not None and not include_decided and decision.verdict is Verdict.PASS:

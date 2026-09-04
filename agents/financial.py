@@ -49,6 +49,8 @@ class FinancialAgent(Agent):
     output_model: ClassVar[type[BaseModel]] = FinancialOutput
 
     def build_inputs(self, actx: AgentContext) -> AgentInputs:
+        if not actx.ctx.quarters:
+            raise ValidationFailure(["no quarterly financials are loaded for this company"])
         snap = {
             **header(actx),
             "financials": financial_snapshot(actx),

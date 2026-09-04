@@ -1,5 +1,9 @@
 # Signal catalogue (PRD §6.2). Every threshold lives here, never in code.
-version: "signals-v1"
+version: "signals-v2"
+
+# Ratio-based financial signals are suppressed below this trailing-twelve-month revenue:
+# a near-zero denominator turns rounding into a 700% "margin move".
+min_ttm_revenue_cr: 5.0
 
 # Cadence (days) at which price-derived signals are evaluated.
 market_signal_cadence_days: 7
