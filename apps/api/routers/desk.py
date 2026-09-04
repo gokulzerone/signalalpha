@@ -163,8 +163,9 @@ def desk(
         if decision is not None and not include_decided and decision.verdict is Verdict.PASS:
             continue
         strongest = max(signals, key=lambda s: (s.direction > 0, float(s.magnitude)))
-        positives = [s for s in signals if s.direction > 0]
-        negatives = [s for s in signals if s.direction < 0]
+        others = [s for s in signals if s.id != strongest.id]
+        positives = sorted((s for s in others if s.direction > 0), key=lambda s: -float(s.magnitude))
+        negatives = sorted((s for s in signals if s.direction < 0), key=lambda s: -float(s.magnitude))
         readiness, _flags, _period = _readiness_for(
             pit, company, signals, rates, failures.get(company.id, 0)
         )

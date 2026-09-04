@@ -151,7 +151,7 @@ export type BaseRate = {
 };
 export type NarratedSignal = {
   signal_id: number; signal_type: string; family: string; direction: number; magnitude: number;
-  public_at: string; sentence: string; evidence_ids: number[];
+  public_at: string; sentence: string; evidence_ids: number[]; document_ids: number[];
 };
 export type Liquidity = {
   adv_inr: number | null; participation_pct: number; comfortable_position_inr: number | null;

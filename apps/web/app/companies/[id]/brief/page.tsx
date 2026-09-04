@@ -27,10 +27,18 @@ export default async function BriefPage({ params, searchParams }: { params: Prom
       {sub && <span className="tick">{sub}</span>}
     </div>
   );
-  const evLinks = (ids: number[]) => ids.map((eid) => {
-    const e = evidence.get(eid);
-    return <Link key={eid} className="ev" href={`/companies/${cid}/documents/${e?.raw_document_id ?? 0}?highlight=${eid}${as_of ? `&as_of=${as_of}` : ""}`} title={e?.extracted_text ?? ""}>read it</Link>;
-  });
+  // A quoted span links to the highlighted passage; a table-derived figure links to the filing.
+  const sourceLinks = (s: { evidence_ids: number[]; document_ids: number[] }) => {
+    if (s.evidence_ids.length) {
+      return s.evidence_ids.map((eid) => {
+        const e = evidence.get(eid);
+        return <Link key={eid} className="ev" href={`/companies/${cid}/documents/${e?.raw_document_id ?? 0}?highlight=${eid}${as_of ? `&as_of=${as_of}` : ""}`} title={e?.extracted_text ?? ""}>read the passage</Link>;
+      });
+    }
+    return s.document_ids.slice(0, 1).map((did) => (
+      <Link key={did} className="ev" href={`/companies/${cid}/documents/${did}${q}`}>open the filing</Link>
+    ));
+  };
 
   return (
     <div className="grid gap-4 max-w-5xl">
@@ -53,7 +61,7 @@ export default async function BriefPage({ params, searchParams }: { params: Prom
         {step(2, "Is it true?", "every line below is a filing you can open")}
         <div className="grid gap-1 text-[13px]">
           {positives.slice(0, 6).map((s) => (
-            <div key={s.signal_id} className="flex gap-2"><span className="pos" aria-hidden>+</span><span>{s.sentence} <span className="tick">{fmt.date(s.public_at)}</span> {evLinks(s.evidence_ids)}</span></div>
+            <div key={s.signal_id} className="flex gap-2"><span className="pos" aria-hidden>+</span><span>{s.sentence} <span className="tick">{fmt.date(s.public_at)}</span> {sourceLinks(s)}</span></div>
           ))}
           {positives.length === 0 && <div className="muted">No positive signals in this window.</div>}
         </div>
@@ -99,7 +107,7 @@ export default async function BriefPage({ params, searchParams }: { params: Prom
         ) : <div className="muted text-[13px]">No contradiction analysis yet. Run the research job before deciding.</div>}
         <div className="grid gap-1 text-[13px] mt-2">
           {negatives.slice(0, 5).map((s) => (
-            <div key={s.signal_id} className="flex gap-2"><span className="neg" aria-hidden>−</span><span>{s.sentence} <span className="tick">{fmt.date(s.public_at)}</span> {evLinks(s.evidence_ids)}</span></div>
+            <div key={s.signal_id} className="flex gap-2"><span className="neg" aria-hidden>−</span><span>{s.sentence} <span className="tick">{fmt.date(s.public_at)}</span> {sourceLinks(s)}</span></div>
           ))}
         </div>
       </section>
@@ -131,7 +139,7 @@ export default async function BriefPage({ params, searchParams }: { params: Prom
         </div>
         <div className="tbl mt-2"><table>
           <thead><tr><th>position</th>{Object.keys(b.liquidity.days_to_exit).map((k) => <th key={k} className="n">₹{k}</th>)}</tr></thead>
-          <tbody><tr><td className="text-muted">trading days to exit</td>{Object.entries(b.liquidity.days_to_exit).map(([k, v]) => <td key={k} className="n">{Number.isFinite(v) ? v : "–"}</td>)}</tr></tbody>
+          <tbody><tr><td className="text-muted">trading days to exit</td>{Object.entries(b.liquidity.days_to_exit).map(([k, v]) => <td key={k} className="n">{Number.isFinite(v) ? (v < 1 ? "under a day" : v) : "–"}</td>)}</tr></tbody>
         </table></div>
       </section>
 

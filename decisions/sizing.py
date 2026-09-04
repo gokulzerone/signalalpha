@@ -66,7 +66,7 @@ def liquidity_profile(
     days = {}
     for size in sizes_inr:
         label = f"{size / 100000:.0f}L" if size < CRORE else f"{size / CRORE:.1f}Cr"
-        days[label] = round(size / per_day, 1) if per_day else float("inf")
+        days[label] = max(0.1, round(size / per_day, 1)) if per_day else float("inf")
     return LiquidityProfile(
         adv_inr=adv,
         participation_pct=participation,
